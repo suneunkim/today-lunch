@@ -57,6 +57,9 @@ const config: Config = {
           },
         },
       },
+      screens: {
+        tablet: '480px',
+      },
     },
   },
   plugins: [],
