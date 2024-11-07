@@ -6,7 +6,7 @@ interface Props {
   disabled?: boolean
   onClick?: () => void
   className?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 const baseStyles = 'py-5 w-full text-body1Reading rounded-[20px]'
@@ -25,7 +25,7 @@ const Button = ({ type, children, disabled = false, onClick, className, ...props
   ${className}
   `
   return (
-    <button onClick={onClick} className={classNames}>
+    <button onClick={onClick} className={classNames} {...props}>
       {children}
     </button>
   )
