@@ -17,7 +17,7 @@ export default function Start() {
           GO START
         </Button>
         <article className='w-[1000px] z-10 absolute left-[-165px] tablet:left-[-105px] bottom-[-170px]'>
-          <img className='' src='start-image.png' alt='먹대리 사원증' />
+          <img src='start-image.png' alt='먹대리 사원증' />
         </article>
         {/* 배경 도형 */}
         <svg
