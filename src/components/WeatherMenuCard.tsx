@@ -15,13 +15,13 @@ const WeatherMenuCard = ({ type, index }: Props) => {
 
   const classNames = `
   ${type === 'orange' ? orangeBaseStyles : grayBaseStyles}
-  ${type === 'orange' && index === 0 ? styles.first : styles.basic}
+  ${type === 'orange' ? (index === 0 ? styles.first : styles.basic) : ''}
   `
 
   return (
     <div className={classNames}>
       <div className='text-headline3'>김치찌개</div>
-      <div className='text-label2 '>
+      <div className='text-label2'>
         {/* 매콤한 맛이 입맛을 돋우고, 뜨거운 국물로 속을 든든하게 채워줘 바쁜 오후에도 활력을 줄 수
         있습니다. */}
         칼칼하고 따듯한 국물
