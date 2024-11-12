@@ -9,7 +9,7 @@ const Header = ({ title, onlyTitle = false }: Props) => {
   return (
     <div
       className={`
-      fixed flex items-center px-5 bg-customs-gray-100 h-12 max-w-[480px] w-full text-body1Normal
+      fixed flex items-center px-5 bg-customs-gray-100 h-12 max-w-[480px] w-full text-body1Normal z-20
       ${onlyTitle ? 'justify-center' : 'justify-between'}
       `}
     >

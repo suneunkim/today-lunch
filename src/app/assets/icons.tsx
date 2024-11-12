@@ -1,6 +1,7 @@
 // Emoji Menu
+import { IconName } from '@/types/types'
 
-export const icons = {
+export const icons: Record<IconName, JSX.Element> = {
   메뉴: (
     <svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
       <g clipPath='url(#clip0_343_2696)'>

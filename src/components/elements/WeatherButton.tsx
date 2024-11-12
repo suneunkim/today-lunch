@@ -20,7 +20,7 @@ const WeatherButton = ({ iconName, smallWeather, onClick }: Props) => {
   }
 
   const ButtonText = {
-    날씨: '날씨에 어울리는 메뉴는?',
+    날씨: '지금 날씨에 어울리는 메뉴는?',
     메뉴: '등록되어 있는 메뉴 보러가기',
     리뷰: '코멘트 구경하러 가기',
   }
