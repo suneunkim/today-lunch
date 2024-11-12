@@ -1,7 +1,8 @@
 import Button from '@/components/elements/Button'
 import Footer from '@/components/Footer'
+import Link from 'next/link'
 
-export default function Start() {
+export default async function Start() {
   return (
     <div className='min-w-[360px] max-w-[480px] mx-auto'>
       <section className='w-full h-[703px] pl-10 pt-10 tablet:pl-[100px] bg-customs-orange-50 text-customs-gray-100 flex flex-col gap-[10px] relative rounded-b-3xl overflow-hidden'>
@@ -9,15 +10,17 @@ export default function Start() {
           오늘{'\n'}점심은{'\n'}먹대리가
         </h1>
         <h2 className='text-heading1'>점심메뉴 고르기</h2>
-        <Button
-          type='primary'
-          className='max-w-[155px] font-paperlogy mt-[28px] z-10'
-          aria-label='점심 메뉴 추천 시작하기'
-        >
-          GO START
-        </Button>
-        <article className='w-[1000px] z-10 absolute left-[-165px] tablet:left-[-105px] bottom-[-170px]'>
-          <img src='start-image.png' alt='먹대리 사원증' />
+        <Link href='/home' className='z-10'>
+          <Button
+            type='primary'
+            className='max-w-[155px] font-paperlogy mt-[28px] z-10'
+            aria-label='점심 메뉴 추천 시작하기'
+          >
+            GO START
+          </Button>
+        </Link>
+        <article className='w-[480px] z-10 absolute left-[-60px] tablet:left-0 bottom-0 '>
+          <img src='mukdaeri-id-card.png' alt='먹대리 사원증' />
         </article>
         {/* 배경 도형 */}
         <svg
@@ -54,8 +57,14 @@ export default function Start() {
         <div className='flex items-center justify-center bg-customs-gray-95 rounded-[100px] h-[41px] text-body1Normal text-customs-gray-25'>
           누적 이용자 수 0명
         </div>
-        <div className='text-center py-10'>서비스 소개 수록 예정</div>
       </section>
+      <article className='flex flex-col items-center mt-[43px] mb-[179px]'>
+        <img
+          className='w-[282px] h-[448px] object-contain'
+          src='mukdaeri-backview.png'
+          alt='먹대리의 일하는 뒷모습'
+        />
+      </article>
       <Footer />
     </div>
   )

@@ -38,3 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 구글 애널리틱스 서비스 키
+/secrets/service-account-key.json
