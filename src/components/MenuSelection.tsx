@@ -2,7 +2,7 @@ import { menu } from '@/app/data/data'
 import OutlinedButton from './elements/OutlinedButton'
 
 interface Props {
-  selectedMenu: any
+  selectedMenu: string
   handleClick: (menu: string) => void
 }
 
