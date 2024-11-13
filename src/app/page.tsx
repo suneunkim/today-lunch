@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default async function Start() {
   return (
-    <div className='min-w-[360px] max-w-[480px] mx-auto'>
+    <div className='min-w-[360px] max-w-[480px] mx-auto bg-customs-gray-95'>
       <section className='w-full h-[703px] pl-10 pt-10 tablet:pl-[100px] bg-customs-orange-50 text-customs-gray-100 flex flex-col gap-[10px] relative rounded-b-3xl overflow-hidden'>
         <h1 className='font-paperlogy whitespace-pre-line text-[40px] font-bold leading-[1.2]'>
           오늘{'\n'}점심은{'\n'}먹대리가
@@ -54,11 +54,11 @@ export default async function Start() {
         </svg>
       </section>
       <section className='p-5'>
-        <div className='flex items-center justify-center bg-customs-gray-95 rounded-[100px] h-[41px] text-body1Normal text-customs-gray-25'>
+        <div className='flex items-center justify-center bg-customs-gray-100 rounded-[100px] h-[41px] text-body1Normal text-customs-gray-25'>
           누적 이용자 수 0명
         </div>
       </section>
-      <article className='flex flex-col items-center mt-[43px] mb-[179px]'>
+      <article className='flex flex-col items-center mt-[43px] pb-[179px] '>
         <img
           className='w-[282px] h-[448px] object-contain'
           src='mukdaeri-backview.png'
