@@ -3,8 +3,10 @@ import WeatherContent from '@/components/features/weather/WeatherContent'
 import Button from '@/components/elements/Button'
 import { getWeatherByCity } from '@/lib/weatherService'
 
+type Params = Promise<{ city: string }>
+
 // @ts-ignore - Next.js page prop type mismatch in app router
-const page = async ({ searchParams }: { searchParams: { city?: string } }) => {
+const page = async ({ searchParams }: { searchParams: Params }) => {
   const { city } = (await searchParams) ?? 'Seoul'
 
   const weatherData = await getWeatherByCity(city)
