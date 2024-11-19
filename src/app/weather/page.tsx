@@ -3,7 +3,7 @@ import WeatherContent from '@/components/features/weather/WeatherContent'
 import Button from '@/components/elements/Button'
 import { getWeatherByCity } from '@/lib/weatherService'
 
-const page = async ({ searchParams }: { searchParams: { city?: string } }) => {
+const page = async ({ searchParams }: { searchParams: { city?: string | undefined } }) => {
   const { city } = (await searchParams) ?? 'Seoul'
 
   const weatherData = await getWeatherByCity(city)
