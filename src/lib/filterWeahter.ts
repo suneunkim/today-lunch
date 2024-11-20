@@ -1,3 +1,4 @@
+import { 전체, 한식, 국물, 해장, 양식, 중식, 일식, 간편식 } from '@/app/data/food'
 import { MenuType } from '@/types/types'
 
 export const getTemperatureCondition = (temperature: number) => {
@@ -10,9 +11,33 @@ export const getTemperatureCondition = (temperature: number) => {
   }
 }
 
-const getRandomItems = (menuList: MenuType[], count: number) => {
+const categoryMenuMap = {
+  한식: 한식,
+  국물: 국물,
+  해장: 해장,
+  양식: 양식,
+  중식: 중식,
+  일식: 일식,
+  간편식: 간편식,
+} as const
+
+export const getRandomItemsList = (categories: string[], count: number) => {
+  // 카테고리에 해당하는 메뉴들 병합
+  const combinedMenuList = categories.flatMap(
+    (category) => (categoryMenuMap as any)[category] || []
+  )
+
+  // 중복 제거
+  const uniqueMenuList = Array.from(new Set(combinedMenuList))
+
+  // 랜덤하게 섞기 및 선택
+  const shuffled = uniqueMenuList.sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count)
+}
+
+export const getRandomItems = (menuList: MenuType[], count: number) => {
   const shuffled = menuList.sort(() => 0.5 - Math.random()) // 배열 섞기
-  return shuffled.slice(0, count) // 앞에서부터 count 개만큼 리턴
+  return shuffled.slice(0, count)
 }
 
 // 날씨로 메뉴 필터링

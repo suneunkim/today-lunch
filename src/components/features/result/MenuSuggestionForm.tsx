@@ -28,8 +28,6 @@ const MenuSuggestionForm = ({ initialSuggestions }: { initialSuggestions: Props[
     // 메뉴 재추천 로직
   }
 
-  console.log(selectedMenu)
-
   return (
     <div>
       <section className='px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px]'>
@@ -53,7 +51,7 @@ const MenuSuggestionForm = ({ initialSuggestions }: { initialSuggestions: Props[
           {/* 표정 부분은 디자인과 달라서 논의 필요 */}
         </p>
       </section>
-      <section className='flex flex-col gap-6 mt-6'>
+      <section className='flex flex-col gap-6 mt-6 mb-[20px]'>
         <div className='flex gap-[10px]'>
           <Button onClick={handleRegenerate} type='secondary'>
             다시 골라줘

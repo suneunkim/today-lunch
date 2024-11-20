@@ -2,6 +2,7 @@ import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
 import BestMenuList from '@/components/features/result/BestMenuList'
 import MenuSuggestionForm from '@/components/features/result/MenuSuggestionForm'
+import { getRandomItemsList } from '@/lib/filterWeahter'
 
 const menuSuggestions = [
   {
@@ -42,15 +43,27 @@ const best = [
   },
 ]
 
-const page = () => {
+type Params = Promise<{ categories: string }>
+
+const page = async ({ searchParams }: { searchParams: Params }) => {
+  const { categories } = (await searchParams) ?? '' // ex) 양식,국물,일식
+
+  const categoryList = categories?.split(',')
+
+  const data = getRandomItemsList(categoryList, 4)
+
+  console.log('수정 후')
+  console.log('categories', categories)
+  console.log('categoryList', categoryList)
+
   return (
     <Container title='결과'>
       <div className='p-5 bg-customs-orange-50'>
-        <MenuSuggestionForm initialSuggestions={menuSuggestions} />
+        <MenuSuggestionForm initialSuggestions={data} />
+        <WeatherButton iconName='맛집' />
         <BestMenuList items={best} />
         <div className='flex flex-col gap-4 mb-20'>
           <WeatherButton iconName='날씨' />
-          <WeatherButton iconName='메뉴' />
           <WeatherButton iconName='리뷰' />
         </div>
       </div>
