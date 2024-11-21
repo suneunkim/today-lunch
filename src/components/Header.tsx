@@ -1,7 +1,8 @@
+import { HeaderTitleType } from '@/types/types'
 import BasicIcon from './elements/BasicIcon'
 
 interface Props {
-  title: '오늘 점심은 먹대리가' | '결과' | '날씨 맞춤 메뉴'
+  title: HeaderTitleType
   onlyTitle?: boolean
 }
 
