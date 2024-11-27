@@ -4,14 +4,20 @@ import { useCallback, useState } from 'react'
 import MenuSelection from '../MenuSelection'
 import Button from '../elements/Button'
 import { useRouter } from 'next/navigation'
+import Loading from '../Loading'
 
 const HomeClient = () => {
   const router = useRouter()
   const [selectedMenu, setSelectedMenu] = useState<string[]>(['전체'])
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = () => {
+    setIsLoading(true)
     const categoriesString = selectedMenu.join(',')
-    router.push(`/result?categories=${categoriesString}`)
+
+    setTimeout(() => {
+      router.push(`/result?categories=${categoriesString}`)
+    }, 2000)
   }
 
   const handleClick = useCallback(
@@ -45,10 +51,18 @@ const HomeClient = () => {
 
   return (
     <div className='flex flex-col gap-5'>
-      <MenuSelection selectedMenu={selectedMenu} handleClick={handleClick} />
-      <Button onClick={handleSubmit} type='primary'>
-        점심메뉴 제안받기
-      </Button>
+      {isLoading ? (
+        <div>
+          <Loading />
+        </div>
+      ) : (
+        <>
+          <MenuSelection selectedMenu={selectedMenu} handleClick={handleClick} />
+          <Button onClick={handleSubmit} type='primary'>
+            점심메뉴 제안받기
+          </Button>
+        </>
+      )}
     </div>
   )
 }
