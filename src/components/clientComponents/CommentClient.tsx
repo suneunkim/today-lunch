@@ -56,7 +56,7 @@ const CommentClient = ({ initialData, initialCommentsCount }: Props) => {
   }
 
   return (
-    <section className='bg-customs-gray-100 p-4 pb-8 rounded-[12px] mb-[125px]'>
+    <section className='bg-customs-gray-100 p-4 pb-8 rounded-[12px] mb-[65px]'>
       <CommentForm refreshComments={refreshComments} />
       <CommentList
         commentsData={commentsData}
