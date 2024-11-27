@@ -2,7 +2,7 @@ import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
 import BestMenuList from '@/components/features/result/BestMenuList'
 import MenuSuggestionForm from '@/components/features/result/MenuSuggestionForm'
-import { getRandomItemsList } from '@/lib/filterWeahter'
+import { CategoryType, getRandomItemsList } from '@/lib/filterWeahter'
 
 const best = [
   {
@@ -32,7 +32,7 @@ type Params = Promise<{ categories: string }>
 const page = async ({ searchParams }: { searchParams: Params }) => {
   const { categories } = (await searchParams) ?? '' // ex) 양식,국물,일식
 
-  const categoryList = categories?.split(',')
+  const categoryList = categories?.split(',') as CategoryType[]
 
   const data = getRandomItemsList(categoryList, 4)
 

@@ -22,10 +22,12 @@ const categoryMenuMap = {
   간편식: 간편식,
 } as const
 
-export const getRandomItemsList = (categories: string[], count: number) => {
+export type CategoryType = keyof typeof categoryMenuMap
+
+export const getRandomItemsList = (categories: CategoryType[], count: number) => {
   // 카테고리에 해당하는 메뉴들 병합
   const combinedMenuList = categories.flatMap(
-    (category) => (categoryMenuMap as any)[category] || []
+    (category) => categoryMenuMap[category] || [] // categoryMenuMap 타입을 정확히 추론
   )
 
   // 중복 제거

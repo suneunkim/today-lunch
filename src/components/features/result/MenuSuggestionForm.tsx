@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import Button from '@/components/elements/Button'
 import CheckBox from '@/components/elements/CheckBox'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { getRandomItemsList } from '@/lib/filterWeahter'
+import { CategoryType, getRandomItemsList } from '@/lib/filterWeahter'
 
 type initialSuggestionsType = {
   name: string
@@ -25,7 +24,7 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
 
   const handleRegenerate = () => {
     // 메뉴 재추천 로직
-    const categoryList = categories.split(',')
+    const categoryList = categories.split(',') as CategoryType[]
     const newSuggestions = getRandomItemsList(categoryList, 4)
     setSuggestions(newSuggestions)
   }
