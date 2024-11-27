@@ -12,6 +12,7 @@ export const getTemperatureCondition = (temperature: number) => {
 }
 
 const categoryMenuMap = {
+  전체: 전체,
   한식: 한식,
   국물: 국물,
   해장: 해장,
