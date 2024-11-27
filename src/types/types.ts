@@ -1,6 +1,3 @@
-import firebase from 'firebase/compat/app'
-import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore'
-
 export type IconName =
   | '한식'
   | '국물'
@@ -24,8 +21,8 @@ export type CommentType = {
 }
 
 export type lastDocType = {
-  id: string;
-  timestamp: string | null;
+  id: string
+  timestamp: string | null
 } | null
 
 export type CommentsDataType = {

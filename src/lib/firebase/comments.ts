@@ -37,7 +37,7 @@ export const getInitialComments = async () => {
   const commentsRef = collection(db, 'comments')
 
   // 코멘트 가져오기
-  const q = query(commentsRef, orderBy('timestamp', 'desc'), limit(4))
+  const q = query(commentsRef, orderBy('timestamp', 'desc'), limit(8))
   const querySnapshot = await getDocs(q)
 
   const comments = querySnapshot.docs.map((doc) => {
@@ -81,7 +81,7 @@ export const getComments = async (lastDoc: { id: string; timestamp: string | nul
             startAfter(new Date(lastDoc.timestamp)),
             limit(6)
           )
-        : query(commentsRef, orderBy('timestamp', 'desc'), limit(6))
+        : query(commentsRef, orderBy('timestamp', 'desc'), limit(8))
 
     const querySnapshot = await getDocs(q)
 
