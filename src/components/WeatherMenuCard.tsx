@@ -1,12 +1,15 @@
+import { MenuType } from '@/types/types'
+
 interface Props {
   type: 'orange' | 'gray'
   index?: number
+  menu: MenuType
 }
 
-const WeatherMenuCard = ({ type, index }: Props) => {
+const WeatherMenuCard = ({ type, index, menu }: Props) => {
   const orangeBaseStyles = 'w-full h-[154px] px-4 py-6 rounded-[10px] flex flex-col gap-3'
   const grayBaseStyles =
-    'min-w-[108px] h-[140px] px-4 py-6 rounded-[10px] flex flex-col gap-4 bg-customs-gray-95'
+    'w-full h-[82px] px-5 py-4 rounded-[10px] flex flex-col gap-2 bg-customs-gray-95'
 
   const styles = {
     basic: 'bg-customs-orange-95-bg text-customs-gray-25',
@@ -20,11 +23,13 @@ const WeatherMenuCard = ({ type, index }: Props) => {
 
   return (
     <div className={classNames}>
-      <div className='text-headline3'>김치찌개</div>
+      <div className='font-paperlogy text-headline3'>{menu.name}</div>
       <div className='text-label2'>
-        {/* 매콤한 맛이 입맛을 돋우고, 뜨거운 국물로 속을 든든하게 채워줘 바쁜 오후에도 활력을 줄 수
-        있습니다. */}
-        칼칼하고 따듯한 국물
+        {type === 'orange' ? (
+          <div className='line-clamp-3'>{menu.description}</div>
+        ) : (
+          <div className='line-clamp-3'>{menu.shortDescription}</div>
+        )}
       </div>
     </div>
   )

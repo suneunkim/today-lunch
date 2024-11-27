@@ -15,7 +15,7 @@ const styles = {
   primary: `${baseStyles} bg-customs-gray-10 text-customs-gray-100  hover:bg-[#323036]`,
   'primary-disabled': `${baseStyles} bg-customs-gray-25 text-customs-gray-75`,
   secondary: `${baseStyles} bg-customs-gray-100 border border-customs-gray-95 hover:bg-customs-gray-95 hover:text-customs-gray-25`,
-  ghost: 'w-full py-[10px] text-customs-gray-10 text-label1 hover:text-customs-orange-95-bg',
+  ghost: 'w-full py-[10px] text-customs-gray-10 text-label1 hover:text-customs-gray-25',
 }
 
 const Button = ({ type, children, disabled = false, onClick, className, ...props }: Props) => {
