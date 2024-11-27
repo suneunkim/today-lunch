@@ -3,16 +3,30 @@
 import { useState } from 'react'
 import Button from '@/components/elements/Button'
 import CheckBox from '@/components/elements/CheckBox'
+import { CategoryType, getRandomItemsList } from '@/lib/filterWeahter'
 
-interface Props {
+type initialSuggestionsType = {
   name: string
   description: string
 }
-const MenuSuggestionForm = ({ initialSuggestions }: { initialSuggestions: Props[] }) => {
+interface Props {
+  initialSuggestions: initialSuggestionsType[]
+  categories: string
+}
+
+const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
+  const [suggestions, setSuggestions] = useState(initialSuggestions)
   const [selectedMenu, setSelectedMenu] = useState(initialSuggestions[0].name)
 
   const handleSelectMenu = (name: string) => {
     setSelectedMenu(name)
+  }
+
+  const handleRegenerate = () => {
+    // 메뉴 재추천 로직
+    const categoryList = categories.split(',') as CategoryType[]
+    const newSuggestions = getRandomItemsList(categoryList, 4)
+    setSuggestions(newSuggestions)
   }
 
   const handleSubmit = async () => {
@@ -24,19 +38,13 @@ const MenuSuggestionForm = ({ initialSuggestions }: { initialSuggestions: Props[
     }
   }
 
-  const handleRegenerate = () => {
-    // 메뉴 재추천 로직
-  }
-
-  console.log(selectedMenu)
-
   return (
     <div>
       <section className='px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px]'>
         <h2 className='w-full flex items-center justify-center border-t-2 border-b h-[53px] text-heading2 text-customs-gray-10 border-customs-gray-10'>
           오늘점심 제안서
         </h2>
-        {initialSuggestions.map((menu, i) => (
+        {suggestions.map((menu, i) => (
           <div key={i}>
             <div
               onClick={() => handleSelectMenu(menu.name)}
@@ -53,7 +61,7 @@ const MenuSuggestionForm = ({ initialSuggestions }: { initialSuggestions: Props[
           {/* 표정 부분은 디자인과 달라서 논의 필요 */}
         </p>
       </section>
-      <section className='flex flex-col gap-6 mt-6'>
+      <section className='flex flex-col gap-6 mt-6 mb-[20px]'>
         <div className='flex gap-[10px]'>
           <Button onClick={handleRegenerate} type='secondary'>
             다시 골라줘

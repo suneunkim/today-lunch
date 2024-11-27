@@ -1,6 +1,5 @@
 import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
-import Button from '@/components/elements/Button'
 import HomeClient from '@/components/clientComponents/HomeClient'
 
 const page = () => {
@@ -28,7 +27,6 @@ const page = () => {
           </div>
         </section>
         <HomeClient />
-        <Button type='primary'>점심메뉴 제안받기</Button>
       </div>
     </Container>
   )
