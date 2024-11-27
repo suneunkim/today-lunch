@@ -43,6 +43,13 @@ export const getWeatherByCity = async (cityName: string = 'Seoul') => {
 
     const data = await res.json()
 
+    console.log('API Response:', data)
+
+    if (data.cod !== 200) {
+      throw new Error(`OpenWeather API Error: ${data.message}`)
+    }
+
+
     // MAJOR_CITIES에서 한글 이름 찾기
     const city = Object.values(MAJOR_CITIES).find((city) => city.name === cityName)
 
@@ -52,7 +59,8 @@ export const getWeatherByCity = async (cityName: string = 'Seoul') => {
     const weatherData = {
       location: locationKR,
       temperature: Math.round(data.main.temp),
-      weather: data.weather[0].main,
+      weather: data.weather?.[0].main,
+
     }
 
     return weatherData
