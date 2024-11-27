@@ -4,7 +4,7 @@ import { CommentType, CommentsDataType } from '@/types/types'
 import CommentBox from './CommentBox'
 import Button from '@/components/elements/Button'
 import { useState } from 'react'
-import { getComments } from '@/lib/\bfirebase/comments'
+import { getComments } from '@/lib/firebase/comments'
 
 interface Props {
   initialData: CommentsDataType

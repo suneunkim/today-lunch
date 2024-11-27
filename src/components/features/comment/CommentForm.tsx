@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import getRandomNickname from '@/lib/nicknameUtils'
-import { addComment } from '@/lib/\bfirebase/comments'
+import { addComment } from '@/lib/firebase/comments'
 
 const CommentForm = () => {
   const [nickname, setNickname] = useState('조용한 너굴')

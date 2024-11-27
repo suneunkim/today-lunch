@@ -3,7 +3,7 @@ import Container from '@/components/Container'
 import TextBubble from '@/components/elements/TextBubble'
 import CommentForm from '@/components/features/comment/CommentForm'
 import CommentList from '@/components/features/comment/CommentList'
-import { getCommentsCount, getInitialComments } from '@/lib/\bfirebase/comments'
+import { getCommentsCount, getInitialComments } from '@/lib/firebase/comments'
 
 const page = async () => {
   const initialData = await getInitialComments()
