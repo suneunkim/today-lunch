@@ -10,6 +10,7 @@ import HeaderSection from './HeaderSection'
 import SuggestionItem from './SuggestionItem'
 import Divider from './Divider'
 import Clip from './Clip'
+import KakaoShareButton from '@/components/KakaoShareButton'
 
 export type initialSuggestionsType = {
   name: string
@@ -80,7 +81,7 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
             이걸로 할게!
           </Button>
         </div>
-        <Button type='ghost'>결과 공유하기</Button>
+        <KakaoShareButton page='result' categories={categories} />
       </section>
       <WeatherButton iconName='맛집' recommendedMenu={selectedMenu} />
     </div>

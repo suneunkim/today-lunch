@@ -1,7 +1,7 @@
 import Container from '@/components/Container'
 import WeatherContent from '@/components/features/weather/WeatherContent'
-import Button from '@/components/elements/Button'
 import { getWeatherByCity } from '@/lib/weatherService'
+import KakaoShareButton from '@/components/KakaoShareButton'
 
 type Params = Promise<{ city: string }>
 
@@ -15,7 +15,8 @@ const page = async ({ searchParams }: { searchParams: Params }) => {
     <Container title='날씨 맞춤 메뉴'>
       <div className='flex flex-col gap-6 mt-6 mb-[147px] px-5'>
         <WeatherContent weatherData={weatherData} />
-        <Button type='ghost'>페이지 공유하기</Button>
+
+        <KakaoShareButton page='weather' />
       </div>
     </Container>
   )
