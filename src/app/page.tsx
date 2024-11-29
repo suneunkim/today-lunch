@@ -3,14 +3,10 @@ import Background from '@/components/features/start/Background'
 import Footer from '@/components/Footer'
 import ServiceClickCount from '@/components/features/start/ServiceClickCount'
 import { getClickCount } from '@/lib/firebase/clickCount'
-import { getAnalyticsData } from '@/lib/getAnalyticsData'
 import Link from 'next/link'
 
 export default async function Start() {
-  const { totalUser } = await getAnalyticsData()
   const currentClickCount = await getClickCount()
-
-  const count = totalUser.data.rows?.[0]?.metricValues?.[0]?.value || 0
 
   return (
     <div className='min-w-[360px] max-w-[480px] mx-auto bg-customs-gray-95'>
@@ -36,11 +32,11 @@ export default async function Start() {
           </div>
         </section>
       </Background>
-      <section className='p-5'>
+      {/* <section className='p-5'>
         <div className='flex items-center justify-center bg-customs-gray-100 rounded-[100px] h-[41px] text-body1Normal text-customs-gray-25'>
-          누적 이용자 수 {count}명
+          누적 이용자 수 {}명
         </div>
-      </section>
+      </section> */}
 
       {/* 하단 이미지 */}
       <article className='flex flex-col items-center mt-[43px] pb-[179px] '>
