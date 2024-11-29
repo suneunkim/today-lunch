@@ -4,6 +4,21 @@ import BestMenuList from '@/components/features/result/BestMenuList'
 import MenuSuggestionForm from '@/components/features/result/MenuSuggestionForm'
 import { CategoryType, getRandomItemsList } from '@/lib/filterWeahter'
 import { fetchTopMenu } from '@/lib/firebase/approval'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '메뉴 추천 결과 - 오늘 점심은 먹대리가',
+  description: '추천받은 메뉴를 확인해보세요!',
+  icons: {
+    icon: '/favicon.png',
+  },
+  openGraph: {
+    url: 'https://today-lunch-smoky.vercel.app',
+    title: '메뉴 추천 결과 - 오늘 점심은 먹대리가',
+    description: '추천받은 메뉴를 확인해보세요!',
+    images: [{ url: '/resultCard.png', width: 800, height: 400 }],
+  },
+}
 
 type Params = Promise<{ categories: string }>
 

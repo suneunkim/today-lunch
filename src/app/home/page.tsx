@@ -1,6 +1,21 @@
 import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
 import HomeClient from '@/components/clientComponents/HomeClient'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '점심 메뉴 추천 - 오늘 점심은 먹대리가',
+  description: '점심이 고민된다면 먹대리에게 추천 받아보세요!',
+  icons: {
+    icon: '/favicon.png',
+  },
+  openGraph: {
+    url: 'https://today-lunch-smoky.vercel.app',
+    title: '점심 메뉴 추천 - 오늘 점심은 먹대리가',
+    description: '점심이 고민된다면 먹대리에게 추천 받아보세요!',
+    images: [{ url: '/mukdaeri.png', width: 500, height: 350 }],
+  },
+}
 
 const page = () => {
   const styles = {

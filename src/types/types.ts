@@ -11,8 +11,14 @@ export type IconName =
   | '맛집'
   | '리뷰'
 
-
-export type HeaderTitleType = '오늘 점심은 먹대리가' | '결과' | '날씨 맞춤 메뉴' | '코멘트'
+export type HeaderTitleType =
+  | '오늘 점심은 먹대리가'
+  | '결과'
+  | '날씨 맞춤 메뉴'
+  | '코멘트'
+  | '프로젝트 팀 소개'
+  | '오픈소스 라이센스'
+  | '의견 보내기'
 
 export type CommentType = {
   id: string
@@ -44,4 +50,3 @@ export type MenuType = {
 export type WeatherCategoryType = 'cold' | 'hot' | 'rain' | 'snow' | 'clear' | 'mild'
 
 export type apiWeahterData = 'Clear' | 'Clouds' | 'Snow' | 'Rain' | 'Drizzle' | 'Thunderstorm'
-

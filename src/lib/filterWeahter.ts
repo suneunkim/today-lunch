@@ -67,11 +67,12 @@ export const getTemperatureFilteredMenus = (
   weatherFilteredMenus: MenuType[] // 날씨로 필터링되어 랜덤 4개 메뉴
 ) => {
   const filteredMenus = menuList.filter((menu) => {
-    // tempCondition이 Cold 또는 Hot이라면, menu.temperature가 해당 기온 조건에 맞는지 체크
-    if (tempCondition === 'Cold' || tempCondition === 'Hot') {
+    // tempCondition이 cold 또는 hot이라면, menu.temperature가 해당 기온 조건에 맞는지 체크
+
+    if (tempCondition === 'cold' || tempCondition === 'hot') {
       return menu.temperature === tempCondition
     }
-    // 그 외의 경우에는 temperature 속성이 없는 메뉴 필터링 (Mild로 간주)
+    // 그 외의 경우에는 temperature 속성이 없는 메뉴 필터링 (mild로 간주)
     return !menu.temperature
   })
 
