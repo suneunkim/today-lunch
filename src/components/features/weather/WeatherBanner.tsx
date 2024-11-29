@@ -1,6 +1,6 @@
 'use client'
 import WeatherIcon from '@/components/elements/WeatherIcon'
-import WeatherCard from './WeatherCard'
+import WeatherCard, { WeatherType } from './WeatherCard'
 import LocationButton from '@/components/elements/LocationButton'
 
 interface Props {
@@ -10,6 +10,8 @@ interface Props {
 }
 
 const WeatherBanner = ({ location, temperature, weather }: Props) => {
+  const weatherAPI = weather.toLowerCase() as WeatherType
+
   const weatherTextMap: { [key: string]: string } = {
     Clear: '맑음',
     Clouds: '구름',
@@ -17,9 +19,11 @@ const WeatherBanner = ({ location, temperature, weather }: Props) => {
     Rain: '비',
     Drizzle: '이슬비',
     Thunderstorm: '천둥번개',
+    Mist: '안개',
   }
 
   const weatherText = weatherTextMap[weather] || weather
+
   const weatherTextIcon = weatherTextMap[weather] as
     | '맑음'
     | '구름'
@@ -35,7 +39,7 @@ const WeatherBanner = ({ location, temperature, weather }: Props) => {
         <h4>{location}</h4>
         <LocationButton />
       </div>
-      <WeatherCard weatherType='rainy'>
+      <WeatherCard weather={weatherAPI}>
         <div>
           <div className='flex'>
             <span className='text-display'>{Math.round(temperature)}</span>

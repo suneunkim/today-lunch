@@ -53,7 +53,7 @@ const KakaoShareButton = ({ page, categories }: Props) => {
 
   return (
     <Button type='ghost' onClick={handleKakaoShare}>
-      {page === 'result' ? '결과 공유하기' : '페이지 공유하기'}
+      {page === 'result' ? '카카오톡으로 결과 공유하기' : '카카오톡으로 페이지 공유하기'}
     </Button>
   )
 }

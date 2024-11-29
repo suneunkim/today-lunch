@@ -11,7 +11,6 @@ import SuggestionItem from './SuggestionItem'
 import Divider from './Divider'
 import Clip from './Clip'
 import KakaoShareButton from '@/components/KakaoShareButton'
-import CheckBox from '@/components/elements/CheckBox'
 
 export type initialSuggestionsType = {
   name: string
@@ -56,7 +55,7 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
 
       {/* 콘텐츠 */}
       <div className='relative'>
-        <div className='absolute bg-customs-gray-90 top-[-8px] right-[-8px] w-full h-full rounded-[20px]' />
+        <div className='absolute bg-[#D1C9BD] top-[-8px] right-[-8px] w-full h-full rounded-[20px]' />
         <section className='relative px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px] '>
           <HeaderSection />
           {suggestions.map((menu, i) => (

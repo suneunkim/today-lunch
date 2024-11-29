@@ -8,13 +8,46 @@ export const menu = [
 
 // WeatherCard 날씨에 따른 배경 색상
 export const weatherBackgroundColors = {
-  sunny: `linear-gradient(113deg, #FFD700 -20%, #FFA500 106%)`, // 예시
-  cloudy: `linear-gradient(113deg, #d3d6d9 -20%, #a9a9a9 106%)`, // 예시
-  rainy: `linear-gradient(
-      113deg,
-      #d3d6d9 -20%,
-      rgba(211, 214, 217, 0.36) -4%,
-      rgba(136, 197, 255, 0.7) 106%
-    )`,
-  snowy: `linear-gradient(113deg, #FFFFFF -20%, #D3D3D3 106%)`, // 예시
+  clear: `linear-gradient(90deg, #C2E9FB 0%, #A1C4FD 100%)`,
+  clouds: `linear-gradient(90deg, #BCC5CE 0%, #929EAD 98%)`,
+  thunderstorm: `linear-gradient(90deg, #BCC5CE 0%, #929EAD 98%)`,
+  rain: `linear-gradient(90deg, #D1E9FF 0%, #C3CFE2 100%)`,
+  drizzle: `linear-gradient(90deg, #D1E9FF 0%, #C3CFE2 100%)`,
+  snow: `linear-gradient(0deg, #FFF -54.77%, #97BFF5 103.53%)`,
 }
+
+export const teamData = [
+  {
+    id: 1,
+    name: '김선은',
+    role: 'Front-end Developer',
+    about: '프론트엔드 개발',
+    image: '/profile/character1.png',
+    links: [
+      { type: 'Github', url: '' },
+      { type: 'Website', url: '' },
+    ],
+  },
+  {
+    id: 2,
+    name: '강수민',
+    role: 'UXUI Designer',
+    about: 'UXUI 디자인 / 캐릭터 일러스트 & 모션',
+    image: '/profile/character2.png',
+    links: [
+      { type: 'Notion', url: '' },
+      { type: 'Behance', url: '' },
+    ],
+  },
+  {
+    id: 3,
+    name: '조수진',
+    role: 'UXUI Designer',
+    about: 'UXUI 디자인 / 캐릭터 스케치 / 디자인시스템',
+    image: '/profile/character3.png',
+    links: [
+      { type: 'Notion', url: '' },
+      { type: 'Behance', url: '' },
+    ],
+  },
+]

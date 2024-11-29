@@ -22,6 +22,9 @@ const paperlogy = localFont({
 export const metadata: Metadata = {
   title: '오늘 점심은 먹대리가',
   description: '먹대리에게 점심 메뉴 추천을 받아보세요!',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export default function RootLayout({

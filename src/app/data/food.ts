@@ -14,37 +14,37 @@ export const 한식 = [
   {
     name: '동태찌개',
     description: '시원하며 깔끔하게 매콤한 맛.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '매콤하며 깔끔한 맛',
   },
   {
     name: '된장찌개',
     description: '구수한 맛의 된장찌개로 속을 든든하게 채워주는 메뉴',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '구수하고 시원한 맛',
   },
   {
     name: '뚝배기불고기',
     description: '달콤 짭조름한 불고기와 뜨끈한 국물이 어우러져 든든합니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '달콤 짭조름한 불고기',
   },
   {
     name: '닭도리탕',
     description: '매콤한 양념과 부드러운 닭고기, 야채가 어우러져 포만감을 줍니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '매콤한 양념과 닭고기, 야채',
   },
   {
     name: '닭개장',
     description: '매콤한 닭 국물이 진하고 든든해 속을 따뜻하게 해줍니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '매콤한 닭 국물',
   },
   {
     name: '육개장',
     description: '매콤하고 진한 국물이 든든하게 속을 채워주는 메뉴입니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '매콤하고 진한 국물',
   },
   {
@@ -60,7 +60,7 @@ export const 한식 = [
   {
     name: '돌솥비빔밥',
     description: '식지 않는 돌솥에서 다양한 재료가 어우러져 풍성한 맛을 즐길 수 있습니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '뜨거운 돌솥에 다양한 재료를 섞어',
   },
   {
@@ -106,7 +106,7 @@ export const 한식 = [
   {
     name: '떡만둣국',
     description: '쫄깃한 떡과 만두가 따뜻한 국물에 어우러져 든든합니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '따뜻한 국물에 쫄깃한 떡과 만두',
   },
   {
@@ -122,49 +122,49 @@ export const 한식 = [
   {
     name: '비빔국수',
     description: '매콤하고 상큼한 양념이 국수와 어우러져 입맛을 돋웁니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '매콤하고 상큼한 국수',
   },
   {
     name: '잔치국수',
     description: '시원하고 깔끔한 국물에 부드러운 면발이 어우러져 부담 없이 즐기기 좋습니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '시원하고 깔끔한 국물',
   },
   {
     name: '칼국수',
     description: '쫄깃한 면발과 따뜻한 국물이 어우러져 든든하고 편안한 점심 메뉴입니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '쫄깃한 면발과 따뜻한 국물',
   },
   {
     name: '수제비',
     description: '차가운 국물이 쫄깃한 면발과 어우러져 입맛을 돋웁니다.',
-    weather: 'cold',
+    temperature: 'cold',
     shortDescription: '쫄깃한 수제비와 진한 국물',
   },
   {
     name: '막국수',
     description: '차가운 국물에 쫄깃한 면발이 어우러져 매운 맛과 시원한 맛이 조화를 이룹니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '차가운 국물에 쫄깃한 면발',
   },
   {
     name: '콩국수',
     description: '고소하고 시원한 콩국물과 부드러운 면이 어우러져 여름에 적합한 메뉴입니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '고소하고 시원한 콩국물과 부드러운 면',
   },
   {
     name: '냉면',
     description: '시원한 육수가 면발과 잘 어우러져 더운 날에 적합합니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '시원한 육수에 쫄깃한 면발',
   },
   {
     name: '초계국수',
     description: '시원하면서도 매콤한 양념이 어우러져 여름철에 잘 어울리는 국수입니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '시원하면서 매콤한 양념이 어우러진 국수',
   },
 ]
@@ -473,7 +473,6 @@ export const 양식 = [
     name: '치킨',
     description: '겉은 바삭 안은 촉촉 원하는 소스로 조합된 치킨 메뉴는 실패할 수 없죠!',
     shortDescription: '다양한 소스와 바삭 촉촉한 치킨',
-    weather: 'clear',
   },
   {
     name: '뇨끼',
@@ -586,7 +585,7 @@ export const 중식 = [
   {
     name: '짬뽕',
     description: '얼큰하고 진한 국물이 쫄깃한 면과 어우러져 속을 따뜻하게 해줍니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '얼큰한 국물과 쫄깃한 면의 따뜻한 조화',
   },
   {
@@ -603,7 +602,7 @@ export const 중식 = [
   {
     name: '중국집 우동',
     description: '따뜻한 국물과 부드러운 면발이 어우러져 든든하고 편안한 맛을 즐길 수 있습니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '따뜻한 국물과 부드러운 면발의 든든함',
   },
   {
@@ -619,7 +618,7 @@ export const 중식 = [
   {
     name: '삼선짬뽕',
     description: '신선한 해산물이 국물에 어우러져 감칠맛과 얼큰함이 가득한 요리입니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '신선한 해산물과 얼큰한 국물의 감칠맛',
   },
   {
@@ -645,7 +644,7 @@ export const 중식 = [
   {
     name: '마라탕',
     description: '알싸하고 매콤한 국물이 다양한 재료와 어우러져 강렬한 맛을 선사합니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '매콤하고 알싸한 국물과 다양한 재료의 강렬한 맛',
   },
 ]
@@ -655,7 +654,7 @@ export const 일식 = [
     name: '돈코츠 라멘',
     description: '진하게 우려낸 돼지뼈 육수가 면발과 어우러져 깊고 풍부한 맛을 제공합니다.',
     shortDescription: '진한 돼지뼈 육수와 면발의 깊은 풍미',
-    weather: 'cold',
+    temperature: 'cold',
   },
   {
     name: '초밥',
@@ -671,7 +670,7 @@ export const 일식 = [
     name: '모밀 세트',
     description: '시원한 모밀국수와 곁들임 요리가 조화를 이루어 깔끔한 식사를 제공합니다.',
     shortDescription: '시원한 모밀국수와 곁들임 요리의 깔끔한 식사',
-    weather: 'hot',
+    temperature: 'hot',
   },
   {
     name: '돈부리',
@@ -691,7 +690,7 @@ export const 일식 = [
   {
     name: '냉우동',
     description: '차가운 국물이 쫄깃한 우동면과 어우러져 더운 날씨에 적합한 메뉴입니다.',
-    weather: 'hot',
+    temperature: 'hot',
     shortDescription: '차가운 국물과 쫄깃한 면의 시원한 조화',
   },
   {
