@@ -11,6 +11,7 @@ import SuggestionItem from './SuggestionItem'
 import Divider from './Divider'
 import Clip from './Clip'
 import KakaoShareButton from '@/components/KakaoShareButton'
+import { incrementServiceUseCount } from '@/lib/firebase/clickCount'
 
 export type initialSuggestionsType = {
   name: string
@@ -30,12 +31,14 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
     setSelectedMenu(name)
   }
 
-  const handleRegenerate = () => {
+  const handleRegenerate = async () => {
     // 메뉴 재추천
     setIsSubmitted(false)
     const categoryList = categories.split(',') as CategoryType[]
     const newSuggestions = getRandomItemsList(categoryList, 3)
     setSuggestions(newSuggestions)
+
+    await incrementServiceUseCount()
   }
 
   const handleSubmit = async () => {

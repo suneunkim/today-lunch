@@ -1,5 +1,4 @@
 import { HeaderTitleType } from '@/types/types'
-import BasicIcon from './elements/BasicIcon'
 import HeaderAction from './elements/HeaderAction'
 
 interface Props {
