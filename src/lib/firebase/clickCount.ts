@@ -26,7 +26,7 @@ export const incrementServiceUseCount = async () => {
 
 // 카운트 수
 export const getClickCount = async () => {
-  const docRef = doc(db, 'serviceClick', 'clickCount') // Firestore에서 해당 문서 선택
+  const docRef = doc(db, 'serviceClick', 'serviceClickCount') // Firestore에서 해당 문서 선택
   try {
     const docSnap = await getDoc(docRef)
 

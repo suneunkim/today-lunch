@@ -14,7 +14,11 @@ const Footer = () => {
         <Link href='/licenses'>
           <li>소스 라이센스</li>
         </Link>
-        <li>의견 보내기</li>
+        <li>
+          <a href='https://forms.gle/jsQ1tkDHeBaTcLpZ8' target='_blank' rel='noopener noreferrer'>
+            의견 보내기
+          </a>
+        </li>
       </ul>
     </footer>
   )
