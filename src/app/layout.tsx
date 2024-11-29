@@ -25,6 +25,12 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
   },
+  openGraph: {
+    url: 'https://today-lunch-smoky.vercel.app',
+    title: '오늘 점심은 먹대리가',
+    description: '먹대리에게 점심 메뉴 추천을 받아보세요!',
+    images: [{ url: '/mukdaeri-id-card.png', width: 800, height: 600 }],
+  },
 }
 
 export default function RootLayout({

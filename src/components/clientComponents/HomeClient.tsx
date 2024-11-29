@@ -13,7 +13,7 @@ import { incrementServiceUseCount } from '@/lib/firebase/clickCount'
 
 const HomeClient = () => {
   const router = useRouter()
-  const [analytics, setAnalytics] = useState<any>(null) // 상태로 analytics 관리
+  const [analytics, setAnalytics] = useState<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [analyticsInitialized, setAnalyticsInitialized] = useState(false)
   const [selectedMenu, setSelectedMenu] = useState<string[]>(['전체'])
   const [isLoading, setIsLoading] = useState(false)

@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://today-lunch-smoky.vercel.app
+
+# Sitemaps
+Sitemap: https://today-lunch-smoky.vercel.app/sitemap.xml

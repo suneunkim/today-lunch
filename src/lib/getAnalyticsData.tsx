@@ -16,6 +16,7 @@ export async function getAnalyticsData() {
   try {
     const authClient = await auth.getClient()
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const totalUser = await analyticsData.properties.runReport({
       auth: authClient as any,
       property: 'properties/466314451', // 속성 ID를 직접 파라미터로 전달
@@ -55,3 +56,4 @@ export async function getAnalyticsData() {
     throw error
   }
 }
+/* eslint-disable @typescript-eslint/no-explicit-any */

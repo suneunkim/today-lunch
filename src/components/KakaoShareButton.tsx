@@ -12,10 +12,10 @@ const KakaoShareButton = ({ page, categories }: Props) => {
   const isKakaoLoaded = useLoadKakao()
 
   const resultImage =
-    'https://cdn.discordapp.com/attachments/1298624877435027492/1309326486674735154/1993a523aba79b50.png?ex=674915d0&is=6747c450&hm=dfdf2a20f3e9a53163312c1997c8c5ea410ec1dba18e4e7f790f9dd068a08765&'
+    'https://cdn.discordapp.com/attachments/1298624877435027492/1311970297804488785/-_.png?ex=674acb0e&is=6749798e&hm=064687a2bd24818c8a7e030cb0f144b3f3920e8d0d6481caa366f82a67e9f80d&'
 
   const weatherImage =
-    'https://cdn.discordapp.com/attachments/1298624877435027492/1309326486955626566/4b1426bc77ba75ef.png?ex=674915d0&is=6747c450&hm=cf40109fae744c7bc8ef5fb0d93e9ae959ce0eacc8f67958ac53cacbfba635b6&'
+    'https://cdn.discordapp.com/attachments/1298624877435027492/1311970298316328980/-_-1.png?ex=674acb0e&is=6749798e&hm=7777c5254701a50b4ce8817ad861cd25ae57e5b4d05d94b63a6984f7309ac26d&'
 
   const handleKakaoShare = () => {
     if (isKakaoLoaded) {
