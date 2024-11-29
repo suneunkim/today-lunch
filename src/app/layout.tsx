@@ -31,6 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko'>
+      <head>
+        <meta
+          name='google-site-verification'
+          content='eGoFpm0RXg_ZhmKvK6SRvtf5psffCcvn5G68aD8S5e0'
+        />
+      </head>
       <body className={`${pretendard.className} ${paperlogy.variable} antialiased`}>
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
         <main>{children}</main>
