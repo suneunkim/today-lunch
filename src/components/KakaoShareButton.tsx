@@ -11,11 +11,9 @@ interface Props {
 const KakaoShareButton = ({ page, categories }: Props) => {
   const isKakaoLoaded = useLoadKakao()
 
-  const resultImage =
-    'https://cdn.discordapp.com/attachments/1298624877435027492/1311970297804488785/-_.png?ex=674acb0e&is=6749798e&hm=064687a2bd24818c8a7e030cb0f144b3f3920e8d0d6481caa366f82a67e9f80d&'
+  const resultImage = '/kakao/result_share.png'
 
-  const weatherImage =
-    'https://cdn.discordapp.com/attachments/1298624877435027492/1311970298316328980/-_-1.png?ex=674acb0e&is=6749798e&hm=7777c5254701a50b4ce8817ad861cd25ae57e5b4d05d94b63a6984f7309ac26d&'
+  const weatherImage = '/kakao/weather_share.png'
 
   const handleKakaoShare = () => {
     if (isKakaoLoaded) {
