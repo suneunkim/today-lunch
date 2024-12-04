@@ -3,6 +3,8 @@ import Container from '@/components/Container'
 import TextBubble from '@/components/elements/TextBubble'
 import { getCommentsCount, getInitialComments } from '@/lib/firebase/comments'
 
+export const dynamic = 'force-dynamic'
+
 const page = async () => {
   const initialData = await getInitialComments()
   const commentsCount = await getCommentsCount()
