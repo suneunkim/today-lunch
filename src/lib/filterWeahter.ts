@@ -1,4 +1,4 @@
-import { 전체, 한식, 국물, 해장, 양식, 중식, 일식, 간편식 } from '@/app/data/food'
+import { 전체, 한식, 국물, 해장, 양식, 중식, 일식, 간편식, 기타 } from '@/app/data/food'
 import { MenuType } from '@/types/types'
 
 export const getTemperatureCondition = (temperature: number) => {
@@ -20,6 +20,7 @@ const categoryMenuMap = {
   중식: 중식,
   일식: 일식,
   간편식: 간편식,
+  기타: 기타,
 } as const
 
 export type CategoryType = keyof typeof categoryMenuMap

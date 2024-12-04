@@ -1,7 +1,7 @@
 // 주요 도시 정의
 const MAJOR_CITIES = {
   SEOUL: { name: 'Seoul', nameKR: '서울특별시', lat: 37.5665, lon: 126.978 },
-  BUSAN: { name: 'Busan', nameKR: '부산특별시', lat: 35.1796, lon: 129.0756 },
+  BUSAN: { name: 'Busan', nameKR: '부산광역시', lat: 35.1796, lon: 129.0756 },
   DAEGU: { name: 'Daegu', nameKR: '대구광역시', lat: 35.8, lon: 128.55 },
   INCHEON: { name: 'Incheon', nameKR: '인천광역시', lat: 37.4563, lon: 126.7052 },
   GWANGJU: { name: 'Gwangju', nameKR: '광주광역시', lat: 35.1547, lon: 126.9156 },
