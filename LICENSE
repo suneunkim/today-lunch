@@ -1,0 +1,37 @@
+# LICENSE
+
+This project includes open-source software licensed under the following terms:
+
+1. **Firebase**
+   - License: Apache 2.0
+   - Copyright: © Google LLC
+
+2. **Google APIs**
+   - License: Apache 2.0
+   - Copyright: © Google LLC
+
+3. **Next.js**
+   - License: MIT
+   - Copyright: © Vercel, Inc.
+
+4. **React**
+   - License: MIT
+   - Copyright: © Meta Platforms, Inc.
+
+5. **React-DOM**
+   - License: MIT
+   - Copyright: © Meta Platforms, Inc.
+
+6. **React Lottie Player**
+   - License: MIT
+   - Copyright: © Amr Yousef
+
+7. **TailwindCSS**
+   - License: MIT
+   - Copyright: © Tailwind Labs, Inc.
+
+8. **TypeScript**
+   - License: Apache 2.0
+   - Copyright: © Microsoft Corporation
+
+For full details of each license, please refer to the LICENSE or NOTICE file provided with each library.

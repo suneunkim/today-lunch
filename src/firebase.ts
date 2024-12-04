@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app'
+import { getDatabase } from 'firebase/database'
 import { getFirestore } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
@@ -7,6 +8,7 @@ import { getFirestore } from 'firebase/firestore'
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: 'today-lunch-68bf2.firebaseapp.com',
+  databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL,
   projectId: 'today-lunch-68bf2',
   storageBucket: 'today-lunch-68bf2.firebasestorage.app',
   messagingSenderId: '919746582779',
@@ -17,3 +19,4 @@ const firebaseConfig = {
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
+export const realtimeDb = getDatabase(app)

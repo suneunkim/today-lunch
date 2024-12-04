@@ -1,5 +1,5 @@
 import { HeaderTitleType } from '@/types/types'
-import BasicIcon from './elements/BasicIcon'
+import HeaderAction from './elements/HeaderAction'
 
 interface Props {
   title: HeaderTitleType
@@ -18,9 +18,9 @@ const Header = ({ title, onlyTitle = false }: Props) => {
         <div className=''>{title}</div>
       ) : (
         <>
-          <BasicIcon name='left' />
+          <HeaderAction name='left' />
           <div>{title}</div>
-          <BasicIcon name='home' />{' '}
+          <HeaderAction name='home' />
         </>
       )}
     </div>

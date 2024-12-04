@@ -18,7 +18,7 @@ interface Props {
 const WeatherContent = ({ weatherData }: Props) => {
   const apiWeather = weatherData?.weather.toLowerCase() ?? 'clear' // 예: 'Clear', 'Rain', 'Snow'
   const temperature = weatherData?.temperature ?? 20 // 기온 값 (기본값 20)
-  const tempCondition = getTemperatureCondition(temperature) // 예: 'Mild' | 'Cold' | 'Hot'
+  const tempCondition = getTemperatureCondition(temperature)
 
   // 날씨에 맞는 메뉴 필터링 - rain, snow 외에는 clear(맑음) 처리
   const weatherFilteredMenus = getWeatherFilteredMenus(해장제외전체, apiWeather)

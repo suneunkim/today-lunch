@@ -1,12 +1,14 @@
 import { weatherBackgroundColors } from '@/app/data/data'
 
+export type WeatherType = keyof typeof weatherBackgroundColors
 interface Props {
   children: React.ReactNode
-  weatherType: 'sunny' | 'cloudy' | 'rainy' | 'snowy'
+  weather: WeatherType
 }
 
-const WeatherCard = ({ children, weatherType }: Props) => {
-  const backgroundColor = weatherBackgroundColors[weatherType]
+const WeatherCard = ({ children, weather }: Props) => {
+  const backgroundColor = weatherBackgroundColors[weather]
+
   return (
     <div
       className='rounded-[16px] h-[105px] px-4 py-2 flex justify-between items-center'
