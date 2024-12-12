@@ -5,6 +5,8 @@ import ServiceClickCount from '@/components/features/start/ServiceClickCount'
 import { getClickCount } from '@/lib/firebase/clickCount'
 import Link from 'next/link'
 
+export const revalidate = 600 // 10분마다 데이터 다시 페치
+
 export default async function Start() {
   const currentClickCount = await getClickCount()
 
