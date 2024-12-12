@@ -34,6 +34,7 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
   const handleRegenerate = async () => {
     // 메뉴 재추천
     setIsSubmitted(false)
+    setSelectedMenu('')
     const categoryList = categories.split(',') as CategoryType[]
     const newSuggestions = getRandomItemsList(categoryList, 3)
     setSuggestions(newSuggestions)
@@ -44,6 +45,7 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
   const handleSubmit = async () => {
     if (isSubmitted) return
     try {
+      if (selectedMenu === '') return alert('메뉴를 선택해주세요.')
       setIsSubmitted(true)
       await incrementCount(selectedMenu)
     } catch (error) {
