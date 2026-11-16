@@ -89,6 +89,9 @@ const HomeClient = () => {
           <Button onClick={handleSubmit} type='primary' disabled={selectedMenu.length === 0}>
             점심메뉴 제안받기
           </Button>
+          <Button type='secondary' onClick={() => router.push('/slot')}>
+            고민 없이 랜덤으로 뽑기
+          </Button>
         </>
       )}
     </div>

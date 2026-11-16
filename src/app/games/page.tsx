@@ -3,10 +3,10 @@ import Container from '@/components/Container'
 import TextBubble from '@/components/elements/TextBubble'
 
 const games = [
-  { href: '/games/fortune', emoji: '🥠', title: '오늘의 점심 운세', desc: '하루 한 번, 먹대리가 봐 드리는 점심운' },
   { href: '/worldcup', emoji: '🏆', title: '메뉴 월드컵', desc: '국룰 점심 메뉴 토너먼트와 역대 우승 순위' },
+  { href: '/games/fortune', emoji: '🥠', title: '오늘의 점심 운세', desc: '하루 한 번, 먹대리가 봐 드리는 점심운' },
+  { href: '/games/tap', emoji: '⚡', title: '제시어 빨리 누르기', desc: '흩어진 글자를 순서대로 톡톡 · 오늘의 랭킹' },
   { href: '/games/timing', emoji: '⏰', title: '점심시간 10초 전', desc: '12시 정각에 딱 맞춰 버튼 누르기 · 내기 가능' },
-  { href: '/games/stamp', emoji: '💮', title: '결재 도장 찍기', desc: '20초 동안 반가운 점심 소식만 골라 도장 쾅' },
 ]
 
 const page = () => {

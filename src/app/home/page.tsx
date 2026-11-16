@@ -1,7 +1,6 @@
 import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
 import HomeClient from '@/components/clientComponents/HomeClient'
-import DeskMenu from '@/components/features/home/DeskMenu'
 import LunchCountdown from '@/components/features/home/LunchCountdown'
 import { Metadata } from 'next'
 
@@ -44,7 +43,6 @@ const page = () => {
           </div>
         </section>
         <HomeClient />
-        <DeskMenu />
       </div>
     </Container>
   )

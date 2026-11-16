@@ -136,7 +136,7 @@ const Page = () => {
                 참가자: <b>{players.join(', ')}</b>
                 <br />
                 <span className='text-caption1 text-customs-gray-50'>
-                  점심 회의실의 “누가 쏠까” 명단입니다. 폰 하나를 돌려가며 차례로 도전하세요.
+                  내기 탭의 “누가 쏠까” 명단입니다. 폰 하나를 돌려가며 차례로 도전하세요.
                 </span>
               </p>
             ) : (

@@ -11,6 +11,7 @@ import {
   orderBy,
   query,
   setDoc,
+  addDoc,
 } from 'firebase/firestore'
 import { dateKey, getFlag, setFlag } from '@/lib/storage'
 
@@ -100,4 +101,23 @@ export const fetchWorldcupRank = async (count = 10): Promise<WorldcupRank[]> => 
   const snap = await withTimeout(getDocs(q), null)
   if (!snap) return []
   return snap.docs.map((d) => ({ name: d.id, wins: d.data().wins ?? 0, picks: d.data().picks ?? 0 }))
+}
+
+// ── 제시어 빨리 누르기: 오늘의 랭킹 (날짜별로 따로 쌓입니다)
+export type TapRank = { name: string; ms: number }
+
+export const submitTapScore = async (name: string, ms: number) => {
+  if (!firebaseEnabled) return false
+  return withTimeout(
+    addDoc(collection(db, 'tapRank', dateKey(), 'scores'), { name, ms }).then(() => true),
+    false
+  )
+}
+
+export const fetchTapRank = async (count = 10): Promise<TapRank[]> => {
+  if (!firebaseEnabled) return []
+  const q = query(collection(db, 'tapRank', dateKey(), 'scores'), orderBy('ms', 'asc'), limit(count))
+  const snap = await withTimeout(getDocs(q), null)
+  if (!snap) return []
+  return snap.docs.map((d) => ({ name: d.data().name as string, ms: d.data().ms as number }))
 }

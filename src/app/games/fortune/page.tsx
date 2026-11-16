@@ -37,7 +37,27 @@ const CAUTIONS = [
   '뜨거운 뚝배기 주의',
   '마늘·파 향 주의 (오후 약속)',
 ]
-const SEATS = ['창가 자리', '입구에서 먼 구석 자리', '주방이 보이는 자리', '벽 쪽 자리', '바 자리', '에어컨 바람 안 오는 자리']
+const COLORS = [
+  { name: '주황', hex: '#F47A3A' }, { name: '노랑', hex: '#F5C400' }, { name: '초록', hex: '#2E9E6B' }, { name: '하늘색', hex: '#5AA9E6' },
+  { name: '남색', hex: '#2B3A67' }, { name: '빨강', hex: '#D7373F' }, { name: '분홍', hex: '#F28CB1' }, { name: '흰색', hex: '#FFFFFF' },
+  { name: '갈색', hex: '#8B5E3C' }, { name: '보라', hex: '#7B5EA7' },
+]
+const DIRECTIONS = ['동쪽', '서쪽', '남쪽', '북쪽', '길 건너편', '한 블록 더 걸어간 곳', '늘 가던 골목']
+const ZODIAC = ['쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양', '원숭이', '닭', '개', '돼지']
+const ZODIAC_LINES = [
+  '먼저 메뉴를 제안하면 모두가 따라옵니다.',
+  '서두르지 않아도 좋은 자리가 납니다.',
+  '오늘은 새로운 식당에 도전해 볼 만합니다.',
+  '함께 먹는 사람 덕에 밥맛이 좋아집니다.',
+  '욕심내서 시킨 사이드가 신의 한 수가 됩니다.',
+  '조용히 혼자 먹는 점심에 복이 있습니다.',
+  '빨리 움직이면 웨이팅을 피합니다.',
+  '양보한 메뉴가 의외로 입에 맞습니다.',
+  '즉흥적으로 고른 메뉴가 정답입니다.',
+  '꼼꼼히 리뷰를 본 보람이 있는 날입니다.',
+  '단골집에 가면 서비스가 나올 운입니다.',
+  '든든하게 먹을수록 오후가 잘 풀립니다.',
+]
 
 // 날짜와 기기 고유 숫자로 만드는 고정 난수 (같은 날에는 항상 같은 운세)
 const seeded = (seed: string) => {
@@ -50,12 +70,22 @@ const seeded = (seed: string) => {
   }
 }
 
-type Fortune = { stars: number; message: string; caution: string; seat: string; menu: MenuType }
+type Fortune = {
+  stars: number
+  message: string
+  caution: string
+  color: (typeof COLORS)[number]
+  direction: string
+  number: number
+  zodiacLines: string[] // 띠 12개 각각의 한마디 (오늘 날짜 기준)
+  menu: MenuType
+}
 
 const Page = () => {
   const [fortune, setFortune] = useState<Fortune | null>(null)
   const [opened, setOpened] = useState(false)
   const [approved, setApproved] = useState(false)
+  const [zodiac, setZodiac] = useState('')
   const today = dateKey()
 
   useEffect(() => {
@@ -77,10 +107,14 @@ const Page = () => {
       stars: 3 + Math.floor(rand() * 3),
       message: pick(MESSAGES),
       caution: pick(CAUTIONS),
-      seat: pick(SEATS),
+      color: pick(COLORS),
+      direction: pick(DIRECTIONS),
+      number: 1 + Math.floor(rand() * 9),
+      zodiacLines: [...ZODIAC_LINES].sort(() => rand() - 0.5),
       menu: pick(pool.length ? pool : 해장제외전체),
     })
     setOpened(getFlag('fortuneOpened') === today)
+    setZodiac(getFlag('zodiac'))
   }, [today])
 
   const open = () => {
@@ -106,7 +140,7 @@ const Page = () => {
             <h2 className='text-heading3 font-paperlogy text-customs-gray-10 mt-5'>
               {m}월 {d}일 점심 운세가 도착했습니다.
             </h2>
-            <p className='text-label2 text-customs-gray-50 mt-2 mb-6'>운세는 하루에 한 번, 매일 새로 나옵니다.</p>
+            <p className='text-label2 text-customs-gray-50 mt-2 mb-6'>운세는 하루에 한 번, 매일 새로 나옵니다. (재미로만 봐 주세요)</p>
             <Button type='primary' onClick={open} disabled={!fortune}>
               운세 열어보기
             </Button>
@@ -129,16 +163,51 @@ const Page = () => {
                   <b className='text-body1Normal text-customs-orange-50'>{fortune.menu.name}</b>
                   <div className='text-caption1 text-customs-gray-50 mt-[2px]'>{fortune.menu.shortDescription}</div>
                 </dd>
-                <dt className='text-customs-gray-50'>행운의 자리</dt>
-                <dd>{fortune.seat}</dd>
+                <dt className='text-customs-gray-50'>행운의 색</dt>
+                <dd className='flex items-center gap-2'>
+                  <span className='w-4 h-4 rounded-full border border-customs-gray-90' style={{ background: fortune.color.hex }} />
+                  {fortune.color.name}
+                </dd>
+                <dt className='text-customs-gray-50'>행운의 숫자</dt>
+                <dd>{fortune.number}</dd>
+                <dt className='text-customs-gray-50'>길한 방향</dt>
+                <dd>{fortune.direction}에 있는 식당</dd>
                 <dt className='text-customs-gray-50'>오늘의 주의</dt>
                 <dd>{fortune.caution}</dd>
               </dl>
 
+              {/* 띠별 한마디: 띠는 한 번 고르면 기억합니다 */}
+              <div className='mt-6 pt-5 border-t border-customs-gray-95'>
+                <p className='text-label1 text-customs-gray-25 mb-2'>띠별 한마디</p>
+                <div className='flex flex-wrap gap-[6px]'>
+                  {ZODIAC.map((animal) => (
+                    <button
+                      key={animal}
+                      onClick={() => {
+                        setZodiac(animal)
+                        setFlag('zodiac', animal)
+                      }}
+                      className={`px-[10px] py-[5px] rounded-full text-caption1 border ${
+                        zodiac === animal
+                          ? 'border-customs-orange-50 bg-customs-orange-95-bg text-customs-orange-50'
+                          : 'border-customs-gray-90 text-customs-gray-25'
+                      }`}
+                    >
+                      {animal}
+                    </button>
+                  ))}
+                </div>
+                {zodiac && (
+                  <p className='text-label2 text-customs-gray-10 mt-3'>
+                    <b>{zodiac}띠</b> · {fortune.zodiacLines[ZODIAC.indexOf(zodiac)]}
+                  </p>
+                )}
+              </div>
+
               <div className='flex gap-[10px] mt-6'>
                 <ShareButton
                   label='운세 공유하기'
-                  text={`[${m}월 ${d}일 점심 운세] ${'★'.repeat(fortune.stars)}\n${fortune.message}\n행운의 메뉴: ${fortune.menu.name}\n- 먹대리 드림`}
+                  text={`[${m}월 ${d}일 점심 운세] ${'★'.repeat(fortune.stars)}\n${fortune.message}\n행운의 메뉴: ${fortune.menu.name} · 행운의 색: ${fortune.color.name}\n- 먹대리 드림`}
                 />
                 <Button type='primary' className='!py-3 !rounded-[14px] !text-label1' onClick={approve} disabled={approved}>
                   {approved ? '결재 완료' : '행운의 메뉴로 결재'}

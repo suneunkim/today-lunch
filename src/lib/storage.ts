@@ -130,11 +130,6 @@ export const saveFavorite = (menu: string, restaurant: string) => {
   return next
 }
 
-// ── 주간 점심 계획서
-export type WeeklyPlan = { weekOf: string; menus: string[] }
-export const getWeeklyPlan = () => read<WeeklyPlan | null>('weekly', null)
-export const saveWeeklyPlan = (plan: WeeklyPlan) => write('weekly', plan)
-
 // ── 누가 쏠까 참가자
 export const getMembers = () => read<string[]>('members', [])
 export const saveMembers = (members: string[]) => write('members', members)

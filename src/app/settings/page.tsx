@@ -209,7 +209,7 @@ const Page = () => {
               </Chip>
             ))}
           </div>
-          <p className={hint}>결재 문서함에 기록된 메뉴는 이 기간 동안 다시 제안하지 않습니다.</p>
+          <p className={hint}>내 기록에 남은 메뉴는 이 기간 동안 다시 제안하지 않습니다.</p>
         </Card>
 
         <Card title='그만 추천받는 메뉴'>

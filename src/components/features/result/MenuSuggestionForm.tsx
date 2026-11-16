@@ -96,7 +96,7 @@ const MenuSuggestionForm = ({ categories, filters }: Props) => {
             다시 골라줘
           </Button>
           <Button onClick={handleSubmit} type='primary' disabled={isSubmitted}>
-            {isSubmitted ? '결재 완료' : '이걸로 할게!'}
+            {isSubmitted ? '결정 완료' : '이걸로 할게!'}
           </Button>
         </div>
         <div className='flex gap-[10px]'>

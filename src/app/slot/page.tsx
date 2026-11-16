@@ -20,7 +20,7 @@ const today = () => {
   return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`
 }
 
-// 먹대리 전결: 고민 없이 메뉴 하나를 뽑아 바로 결재하는 화면 (슬롯머신)
+// 랜덤 뽑기: 고민 없이 메뉴 하나를 뽑아 바로 결재하는 화면 (슬롯머신)
 const Page = () => {
   const [display, setDisplay] = useState('？？？')
   const [tick, setTick] = useState(0)
@@ -68,7 +68,7 @@ const Page = () => {
   }
 
   return (
-    <Container title='먹대리 전결'>
+    <Container title='랜덤 뽑기'>
       <div className='p-5 pb-28 bg-customs-orange-50 min-h-[calc(100vh-48px)]'>
         <div className='relative mt-[16px]'>
           <Clip />
@@ -76,7 +76,7 @@ const Page = () => {
           <div className='relative'>
             <div className='absolute bg-[#D1C9BD] top-[-8px] right-[-8px] w-full h-full rounded-[20px]' />
             <section className='relative px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px]'>
-              <DocTitle>긴급 점심 품의서</DocTitle>
+              <DocTitle>긴급 메뉴 뽑기</DocTitle>
               <dl className='mt-5 text-label2 text-customs-gray-25 grid grid-cols-[64px_1fr] gap-y-1'>
                 <dt className='text-customs-gray-50'>기안일</dt>
                 <dd>{today()}</dd>
@@ -102,7 +102,7 @@ const Page = () => {
                   ? result.description
                   : spinning
                   ? '먹대리가 메뉴판을 넘기는 중입니다…'
-                  : '버튼을 누르면 먹대리가 메뉴 하나를 전결로 정해 드립니다.'}
+                  : '버튼을 누르면 먹대리가 메뉴 하나를 바로 정해 드립니다.'}
               </p>
             </section>
           </div>
@@ -130,15 +130,15 @@ const Page = () => {
           <section className='flex flex-col gap-[10px] mt-4 mb-5'>
             {!result ? (
               <Button type='primary' onClick={spin} disabled={spinning}>
-                {spinning ? '결재 올리는 중…' : '전결로 올리기'}
+                {spinning ? '뽑는 중…' : '메뉴 뽑기'}
               </Button>
             ) : (
               <div className='flex gap-[10px]'>
                 <Button type='secondary' onClick={spin}>
-                  반려! 다시
+                  다시 뽑기
                 </Button>
                 <Button type='primary' onClick={approve} disabled={approved}>
-                  {approved ? '결재 완료' : '승인'}
+                  {approved ? '결정 완료' : '이걸로 할게!'}
                 </Button>
               </div>
             )}

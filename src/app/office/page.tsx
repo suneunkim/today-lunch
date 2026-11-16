@@ -212,7 +212,7 @@ const SplitBill = () => {
 
 const Page = () => {
   return (
-    <Container title='점심 회의실'>
+    <Container title='내기'>
       <div className='bg-customs-beige-85 p-5 flex flex-col gap-5 min-h-[calc(100vh-48px)] pb-20'>
         <WhoPays />
         <SplitBill />

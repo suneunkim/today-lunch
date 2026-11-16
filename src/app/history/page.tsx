@@ -13,7 +13,7 @@ const formatDate = (key: string) => {
   return `${m}월 ${d}일 (${DAYS[new Date(y, m - 1, d).getDay()]})`
 }
 
-// 결재 문서함: "이걸로 할게!"로 결재한 점심 기록과 이번 달 요약
+// 내 점심 기록: "이걸로 할게!"로 결재한 점심 기록과 이번 달 요약
 const Page = () => {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [draft, setDraft] = useState('')
@@ -43,17 +43,17 @@ const Page = () => {
   }
 
   return (
-    <Container title='결재 문서함'>
+    <Container title='내 점심 기록'>
       <div className='bg-customs-beige-85 p-5 flex flex-col gap-5 min-h-[calc(100vh-48px)] pb-20'>
         <Card title={`${Number(month.slice(5))}월 점심 보고`}>
           {report.total === 0 ? (
             <p className='text-label2 text-customs-gray-50'>
-              이번 달 결재 내역이 없습니다. 메뉴를 제안받고 “이걸로 할게!”를 누르면 여기에 쌓입니다.
+              이번 달 기록이 없습니다. 메뉴를 제안받고 “이걸로 할게!”를 누르면 여기에 쌓입니다.
             </p>
           ) : (
             <>
               <p className='text-body2 text-customs-gray-25'>
-                이번 달 결재 <b className='text-customs-orange-50'>{report.total}건</b>
+                이번 달 <b className='text-customs-orange-50'>{report.total}번</b> 기록
                 {report.menus[0] && (
                   <>
                     , 최다 메뉴는 <b>{report.menus[0][0]}</b> ({report.menus[0][1]}회)
@@ -105,11 +105,11 @@ const Page = () => {
           </p>
         </Card>
 
-        <Card title='결재 내역'>
+        <Card title='먹은 기록'>
           {history.length === 0 ? (
             <div className='flex flex-col items-center py-4'>
               <img src='/nocomment.png' alt='' className='w-[110px] h-[99px] object-contain' />
-              <p className='text-label2 text-customs-gray-50 mt-3'>아직 결재한 점심이 없습니다.</p>
+              <p className='text-label2 text-customs-gray-50 mt-3'>아직 기록한 점심이 없습니다.</p>
             </div>
           ) : (
             <ul className='flex flex-col'>
