@@ -5,8 +5,8 @@ import TextBubble from '@/components/elements/TextBubble'
 const games = [
   { href: '/games/fortune', emoji: '🥠', title: '오늘의 점심 운세', desc: '하루 한 번, 먹대리가 봐 드리는 점심운' },
   { href: '/worldcup', emoji: '🏆', title: '메뉴 월드컵', desc: '국룰 점심 메뉴 토너먼트와 역대 우승 순위' },
-  { href: '/games/timing', emoji: '⏰', title: '퇴근 10초 전', desc: '6시 정각에 딱 맞춰 퇴근 버튼 누르기 · 내기 가능' },
-  { href: '/games/stamp', emoji: '💮', title: '결재 도장 찍기', desc: '20초 동안 좋은 서류만 골라 도장 쾅' },
+  { href: '/games/timing', emoji: '⏰', title: '점심시간 10초 전', desc: '12시 정각에 딱 맞춰 버튼 누르기 · 내기 가능' },
+  { href: '/games/stamp', emoji: '💮', title: '결재 도장 찍기', desc: '20초 동안 반가운 점심 소식만 골라 도장 쾅' },
 ]
 
 const page = () => {
@@ -16,7 +16,7 @@ const page = () => {
         <section className='rounded-[20px] bg-customs-gray-100 px-5 pt-5 pb-4 flex justify-between items-end'>
           <div>
             <TextBubble bubbleTail={false} color='gray' text='잠깐 쉬었다 하시죠.' />
-            <TextBubble bubbleTail={true} color='gray' text='부장님껜 비밀입니다.' />
+            <TextBubble bubbleTail={true} color='gray' text='한 판 하고 가시죠.' />
           </div>
           <img className='w-[96px] h-[90px] object-contain' src='/comment.png' alt='먹대리' />
         </section>

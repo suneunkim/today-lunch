@@ -15,7 +15,7 @@ const smallButton = 'h-11 px-4 rounded-[10px] bg-customs-gray-10 text-customs-gr
 const PAY_LINES = [
   '결제… 아니, 결재 감사합니다!',
   '오늘 점심은 이분이 쏘십니다. 박수!',
-  '법카가 아니라는 점 양해 부탁드립니다.',
+  '다음엔 제가 살게요, 라는 말은 기록해 두겠습니다.',
   '커피는 다른 분이 사는 걸로 하시죠.',
 ]
 

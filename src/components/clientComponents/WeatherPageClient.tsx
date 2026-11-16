@@ -35,7 +35,7 @@ const WeatherPageClient = () => {
         <p className='text-caption1 text-customs-gray-75 break-all'>원인: {lastWeatherError}</p>
       )}
       <ShareButton
-        label='동료에게 공유하기'
+        label='공유하기'
         text={
           weatherData
             ? `[먹대리 날씨 보고]\n지금 ${weatherData.location} ${weatherData.temperature}°. 오늘 날씨에 어울리는 점심 메뉴를 확인해 보세요!`

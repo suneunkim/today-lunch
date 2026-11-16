@@ -7,14 +7,14 @@ import Card from '@/components/elements/Card'
 import Chip from '@/components/elements/Chip'
 import { getFlag, getMembers, setFlag } from '@/lib/storage'
 
-const TARGET = 10000 // 17:59:50 에서 시작해 10초 뒤가 6시 정각
+const TARGET = 10000 // 11:59:50 에서 시작해 10초 뒤가 12시 정각
 const HIDE_AFTER = 4000 // 4초 뒤부터는 시계를 가립니다
 
 const clockText = (elapsed: number) => {
-  const total = 50 * 1000 + elapsed // 17:59:50.00 기준
+  const total = 50 * 1000 + elapsed // 11:59:50.00 기준
   const sec = Math.floor(total / 1000)
   const cs = Math.floor((total % 1000) / 10)
-  const hh = sec >= 60 ? 18 : 17
+  const hh = sec >= 60 ? 12 : 11
   const mm = sec >= 60 ? Math.floor((sec - 60) / 60) : 59
   const ss = sec >= 60 ? (sec - 60) % 60 : sec
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -24,19 +24,19 @@ const clockText = (elapsed: number) => {
 const verdict = (diff: number) => {
   const abs = Math.abs(diff)
   const sec = (abs / 1000).toFixed(2)
-  if (abs <= 50) return { title: '칼퇴의 신', desc: `오차 ${sec}초. 6시 정각, 완벽한 퇴근입니다.` }
+  if (abs <= 50) return { title: '점심의 신', desc: `오차 ${sec}초. 12시 정각, 식당 1등 도착입니다.` }
   if (diff < 0) {
-    if (abs <= 300) return { title: '아슬아슬 조퇴', desc: `${sec}초 일찍 나갔습니다. 눈치껏 넘어가 드립니다.` }
-    return { title: '무단 조퇴', desc: `${sec}초나 일찍 나갔습니다. 인사팀에서 연락이 갈 예정입니다.` }
+    if (abs <= 300) return { title: '아슬아슬 선발대', desc: `${sec}초 일찍 일어났습니다. 눈치껏 넘어가 드립니다.` }
+    return { title: '성급한 출발', desc: `${sec}초나 일찍 나갔습니다. 아직 점심시간이 아닙니다.` }
   }
-  if (abs <= 300) return { title: '정시 퇴근', desc: `${sec}초 늦었지만 훌륭합니다.` }
-  if (abs <= 1500) return { title: '눈치 야근', desc: `${sec}초 더 일했습니다. 수당은 없습니다.` }
-  return { title: '자발적 야근', desc: `${sec}초 초과 근무. 먹대리가 먼저 퇴근했습니다.` }
+  if (abs <= 300) return { title: '정시 출발', desc: `${sec}초 늦었지만 훌륭합니다. 줄은 안 서도 됩니다.` }
+  if (abs <= 1500) return { title: '한발 늦음', desc: `${sec}초 늦었습니다. 앞에 세 팀 대기 중입니다.` }
+  return { title: '웨이팅 확정', desc: `${sec}초 늦었습니다. 먹대리는 이미 먹고 있습니다.` }
 }
 
 type Result = { name: string; diff: number }
 
-// 퇴근 10초 전: 시계가 가려진 뒤 6시 정각을 감으로 맞추는 타이밍 게임
+// 점심시간 10초 전: 시계가 가려진 뒤 12시 정각을 감으로 맞추는 타이밍 게임
 const Page = () => {
   const [mode, setMode] = useState<'solo' | 'bet'>('solo')
   const [players, setPlayers] = useState<string[]>([])
@@ -118,7 +118,7 @@ const Page = () => {
   const v = verdict(diff)
 
   return (
-    <Container title='퇴근 10초 전'>
+    <Container title='점심시간 10초 전'>
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
         <div className='flex gap-2'>
           <Chip selected={mode === 'solo'} onClick={() => resetBet('solo')}>
@@ -164,11 +164,11 @@ const Page = () => {
               </p>
             )}
             <p className='text-label2 text-customs-gray-50'>
-              6시 정각(18:00:00.00)에 퇴근 버튼을 누르세요. 4초 뒤부터는 먹대리가 시계를 가립니다.
+              12시 정각(12:00:00.00)에 버튼을 누르세요. 4초 뒤부터는 먹대리가 시계를 가립니다.
             </p>
             <div className='mt-4 h-[108px] rounded-[14px] bg-customs-orange-95-bg flex items-center justify-center'>
               <span className='font-paperlogy font-bold text-[34px] text-customs-orange-50 tabular-nums'>
-                {hidden ? '18:??:??.??' : display}
+                {hidden ? '1?:??:??.??' : display}
               </span>
             </div>
 
@@ -185,12 +185,12 @@ const Page = () => {
             <div className='mt-5'>
               {phase === 'idle' && (
                 <Button type='primary' onClick={start}>
-                  근무 시작 (17:59:50)
+                  시작 (11:59:50)
                 </Button>
               )}
               {phase === 'running' && (
                 <Button type='primary' onClick={stop}>
-                  퇴근!
+                  점심 먹으러 출발!
                 </Button>
               )}
               {phase === 'done' && (
@@ -208,7 +208,7 @@ const Page = () => {
               <div className='rounded-[14px] bg-customs-orange-95-bg px-5 py-4 mb-4 pop-in'>
                 <div className='text-label2 text-customs-gray-25'>오늘의 결제자</div>
                 <div className='font-paperlogy font-bold text-[26px] text-customs-orange-50'>{loser.name} 님</div>
-                <div className='text-caption1 text-customs-gray-50 mt-1'>6시에서 가장 멀었습니다. 결제 감사합니다!</div>
+                <div className='text-caption1 text-customs-gray-50 mt-1'>12시에서 가장 멀었습니다. 결제 감사합니다!</div>
               </div>
             )}
             <ul>
@@ -220,7 +220,7 @@ const Page = () => {
                       {i + 1}위 {r.name}
                     </span>
                     <span>
-                      {r.diff < 0 ? '조퇴' : '야근'} {(Math.abs(r.diff) / 1000).toFixed(2)}초
+                      {r.diff < 0 ? '빠름' : '늦음'} {(Math.abs(r.diff) / 1000).toFixed(2)}초
                     </span>
                   </li>
                 ))}

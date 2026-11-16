@@ -33,7 +33,7 @@ export const dateKey = (d: Date = new Date()) => {
   return `${y}-${m}-${day}`
 }
 
-// ── 취향 (입사 첫날 취향 조사)
+// ── 취향 (첫 실행 취향 조사)
 export type Prefs = {
   onboarded: boolean
   spicy: 'love' | 'ok' | 'no'

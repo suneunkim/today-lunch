@@ -20,7 +20,7 @@ const QUESTIONS: {
 }[] = [
   {
     key: 'spicy',
-    ask: '회식 장소가 불닭집으로 잡혔습니다. 어떠십니까?',
+    ask: '약속 장소가 매운 떡볶이집으로 잡혔습니다. 어떠십니까?',
     options: [
       { value: 'love', label: '오히려 좋아', sub: '매운 건 언제나 환영' },
       { value: 'ok', label: '먹을 수는 있지', sub: '적당히 매운 정도면 괜찮아요' },
@@ -29,7 +29,7 @@ const QUESTIONS: {
   },
   {
     key: 'base',
-    ask: '오전 회의가 길어져 지쳤습니다. 지금 가장 끌리는 건?',
+    ask: '오전 내내 정신없이 바빴습니다. 지금 가장 끌리는 건?',
     options: [
       { value: '국물', label: '뜨끈한 국물', sub: '뚝배기에 밥 말아서' },
       { value: '밥', label: '든든한 밥', sub: '반찬 놓고 제대로 한 끼' },
@@ -38,9 +38,9 @@ const QUESTIONS: {
   },
   {
     key: 'volume',
-    ask: '오후 2시에 중요한 보고가 있습니다. 점심은?',
+    ask: '오후에 중요한 일정이 있습니다. 점심은?',
     options: [
-      { value: '든든', label: '든든하게 먹어야 힘이 나지', sub: '밥심으로 일합니다' },
+      { value: '든든', label: '든든하게 먹어야 힘이 나지', sub: '밥심으로 버팁니다' },
       { value: '가벼운', label: '졸리면 안 되니 가볍게', sub: '식곤증은 사절' },
     ],
   },
@@ -55,7 +55,7 @@ const AVOID_OPTIONS: { tag: MenuTag; label: string }[] = [
 const optionStyle =
   'w-full text-left px-5 py-4 rounded-[14px] border border-customs-gray-90 bg-customs-gray-100 active:bg-customs-orange-95-bg'
 
-// 입사 첫날 취향 조사: 심리테스트처럼 몇 가지만 고르면 추천에 반영됩니다. 건너뛰어도 됩니다.
+// 첫 실행 취향 조사: 심리테스트처럼 몇 가지만 고르면 추천에 반영됩니다. 건너뛰어도 됩니다.
 const Page = () => {
   const router = useRouter()
   const [step, setStep] = useState(0)
@@ -89,7 +89,7 @@ const Page = () => {
             <TextBubble
               bubbleTail={false}
               color='gray'
-              text={isResult ? '분석이 끝났습니다.' : '입사를 환영합니다!'}
+              text={isResult ? '분석이 끝났습니다.' : '처음 뵙겠습니다!'}
             />
             <TextBubble
               bubbleTail={true}

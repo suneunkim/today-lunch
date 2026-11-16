@@ -6,15 +6,16 @@ import Button from '@/components/elements/Button'
 import DocTitle from '@/components/elements/DocTitle'
 import { getFlag, setFlag } from '@/lib/storage'
 
+// 승인할 것: 반가운 점심 소식 / 반려할 것: 피하고 싶은 점심 상황
 const GOOD = [
-  '점심 김치찌개 품의', '법카 점심 결제 요청', '칼퇴 신청서', '연차 사용 신청', '간식비 지원 요청',
-  '점심시간 30분 연장안', '금요일 조기 퇴근안', '회식 대신 점심 회식 품의', '커피머신 교체 요청', '재택근무 신청서',
-  '탕비실 과자 보충 요청', '점심 메뉴 제안서', '워크숍 대신 휴가 지급안',
+  '줄 없는 맛집 발견', '반찬 무한 리필', '친구가 쏜다는 제안', '공깃밥 서비스', '오늘의 메뉴 반값 할인',
+  '창가 자리 비어 있음', '음식 5분 만에 나옴', '사장님의 계란프라이 서비스', '식후 커피 쿠폰 당첨', '국물 리필 무료',
+  '새로 생긴 식당 오픈 할인', '곱빼기 무료 업그레이드', '딱 한 자리 남은 맛집 입장',
 ]
 const BAD = [
-  '야근 신청서', '주말 출근 요청', '회식 3차 품의', '월요일 7시 조찬 회의', '점심시간 단축안',
-  '금요일 오후 6시 회의 소집', '연차 반려 통보', '휴일 워크숍 계획서', '탕비실 폐쇄안', '퇴근 후 단체 등산 품의',
-  '점심 도시락 의무화안', '새벽 6시 출근제 도입안',
+  '웨이팅 30분', '어제 먹은 메뉴 또 먹기', '“아무거나” 라는 대답', '재료 소진으로 주문 불가', '메뉴 정하는 데 20분',
+  '흰 옷 입고 짬뽕', '카드 두고 나옴', '식당 정기 휴무일', '다 먹었는데 머리카락 발견', '혼자 남기고 다 가버림',
+  '더치페이인데 혼자 제일 비싼 메뉴', '점심시간 5분 남기고 음식 나옴',
 ]
 
 const DURATION = 20
@@ -27,14 +28,14 @@ const newDoc = (id: number): Doc => {
 
 const grade = (score: number) =>
   score >= 28
-    ? '결재의 달인. 임원 승진을 축하드립니다.'
+    ? '점심 결정의 달인. 메뉴 고민은 이분께 맡기면 됩니다.'
     : score >= 20
-    ? '유능한 팀장님. 결재판이 깨끗합니다.'
+    ? '믿고 따라가는 맛잘알. 판단이 빠르고 정확합니다.'
     : score >= 12
-    ? '무난한 대리. 서류는 좀 더 꼼꼼히 봐 주세요.'
-    : '수습 사원. 야근 신청서에 도장 찍으시면 안 됩니다…'
+    ? '무난한 점심 메이트. 조금만 더 꼼꼼히 봐 주세요.'
+    : '웨이팅 30분에 도장을 찍으시면 안 됩니다…'
 
-// 결재 도장 찍기: 좋은 서류는 승인, 나쁜 서류는 반려. 20초 동안 최대한 많이.
+// 결재 도장 찍기: 반가운 점심 소식은 승인, 피하고 싶은 상황은 반려. 20초 동안 최대한 많이.
 const Page = () => {
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
   const [doc, setDoc] = useState<Doc>(newDoc(0))
@@ -88,7 +89,7 @@ const Page = () => {
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
         <div className='flex justify-between items-end'>
           <div>
-            <div className='text-caption1 text-customs-gray-50'>처리한 서류</div>
+            <div className='text-caption1 text-customs-gray-50'>처리한 안건</div>
             <div className='font-paperlogy font-bold text-[30px] text-customs-gray-10'>{score}건</div>
           </div>
           <div className='text-right'>
@@ -107,10 +108,10 @@ const Page = () => {
               feedback === 'ok' ? 'bg-customs-orange-95-bg' : feedback === 'no' ? 'bg-customs-gray-90' : 'bg-customs-gray-100'
             }`}
           >
-            <DocTitle>{phase === 'done' ? '근무 평가서' : '결재 서류'}</DocTitle>
+            <DocTitle>{phase === 'done' ? '결재 실적 보고' : '점심 안건'}</DocTitle>
             {phase === 'idle' && (
               <p className='text-body2 text-customs-gray-25 mt-6'>
-                20초 동안 서류가 쏟아집니다. 직원들이 좋아할 서류는 <b>승인</b>, 싫어할 서류는 <b>반려</b>하세요.
+                20초 동안 점심 안건이 쏟아집니다. 반가운 소식은 <b>승인</b>, 피하고 싶은 상황은 <b>반려</b>하세요.
                 <br />
                 맞으면 +1건, 틀리면 −2건입니다.
               </p>
@@ -142,7 +143,7 @@ const Page = () => {
           </div>
         ) : (
           <Button type='primary' onClick={start}>
-            {phase === 'done' ? '다시 출근하기' : '결재 시작'}
+            {phase === 'done' ? '다시 도전' : '결재 시작'}
           </Button>
         )}
       </div>

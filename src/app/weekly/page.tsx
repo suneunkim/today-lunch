@@ -120,7 +120,7 @@ const Page = () => {
               전부 다시 짜기
             </Button>
             <ShareButton
-              label='팀 단톡방에 계획서 공유하기'
+              label='단톡방에 계획서 공유하기'
               text={shareText}
               image={() =>
                 renderDocCard({
