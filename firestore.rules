@@ -20,12 +20,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.resource.data.keys().hasOnly(['wins', 'picks']);
     }
-    // 제시어 게임 랭킹: 새 기록 추가만 가능 (수정·삭제 불가, 말이 안 되게 빠른 기록은 거부)
+    // 주문 받기 게임 랭킹: 새 기록 추가만 가능 (수정·삭제 불가, 말이 안 되게 빠른 기록은 거부)
     match /tapRank/{day}/scores/{score} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['name', 'ms'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 20
-        && request.resource.data.ms is int && request.resource.data.ms >= 900;
+        && request.resource.data.ms is int && request.resource.data.ms >= 2500;
     }
     // 코멘트 게시판은 앱에서 뺐습니다. 기존 글은 보관만 하고 새 글은 막습니다.
     match /comments/{comment} {

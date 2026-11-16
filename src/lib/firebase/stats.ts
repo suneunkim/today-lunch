@@ -103,7 +103,7 @@ export const fetchWorldcupRank = async (count = 10): Promise<WorldcupRank[]> => 
   return snap.docs.map((d) => ({ name: d.id, wins: d.data().wins ?? 0, picks: d.data().picks ?? 0 }))
 }
 
-// ── 제시어 빨리 누르기: 오늘의 랭킹 (날짜별로 따로 쌓입니다)
+// ── 주문 받기 게임: 오늘의 랭킹 (날짜별로 따로 쌓입니다)
 export type TapRank = { name: string; ms: number }
 
 export const submitTapScore = async (name: string, ms: number) => {

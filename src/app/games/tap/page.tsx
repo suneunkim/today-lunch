@@ -4,132 +4,116 @@ import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
 import Card from '@/components/elements/Card'
-import Chip from '@/components/elements/Chip'
 import Ranking from '@/components/elements/Ranking'
 import { fetchTapRank, submitTapScore, TapRank } from '@/lib/firebase/stats'
 import { dateKey, getFlag, setFlag } from '@/lib/storage'
 
-// 제시어는 글자 몇 개가 뒤섞여 반복되는 말입니다. 버튼은 글자 종류만큼만 나오고, 제시어 전체를 순서대로 눌러야 합니다.
-// 고정 제시어 (첫 번째가 랭킹 종목). 공백은 줄바꿈 위치입니다.
-const PHRASES = [
-  '먹대리점심먹먹 대리점먹심대리먹',
-  '짜장짬뽕짬짜짜 장뽕짬짜뽕장짬',
-  '김밥국밥볶음밥 김국밥볶밥국김',
-  '돈까스까스돈돈 까까스돈스까돈',
+// 헷갈리기 쉬운 메뉴끼리 묶은 메뉴판. 한 판에 한 묶음(9개)이 통째로 나옵니다.
+const BOARDS = [
+  ['김치찌개', '김치찜', '김치볶음밥', '김치전', '김치말이국수', '김치수제비', '된장찌개', '순두부찌개', '부대찌개'],
+  ['짜장면', '간짜장', '삼선짜장', '쟁반짜장', '짬짜면', '짬뽕', '삼선짬뽕', '볶음짬뽕', '짬뽕밥'],
+  ['칼국수', '바지락칼국수', '들깨칼국수', '닭칼국수', '팥칼국수', '잔치국수', '비빔국수', '막국수', '콩국수'],
+  ['돈카츠 정식', '치즈돈카츠', '히레카츠', '카츠카레', '가츠동', '규카츠', '경양식 돈까스', '돈까스 김밥', '텐동'],
+  ['순댓국', '돼지국밥', '소머리국밥', '수육국밥', '굴국밥', '콩나물국밥', '시래기국밥', '소고기국밥', '설렁탕'],
+  ['김밥', '참치김밥', '충무김밥', '키토김밥', '유부초밥', '주먹밥', '오니기리', '후토마끼', '컵밥'],
+  ['까르보나라', '알리오올리오', '봉골레파스타', '로제파스타', '투움바파스타', '토마토파스타', '명란 파스타', '라구 파스타', '아라비아따'],
+  ['우동', '냉우동', '카레우동', '붓카케우동', '미소라멘', '쇼유라멘', '돈코츠 라멘', '츠케멘', '마제소바'],
+  ['비빔밥', '돌솥비빔밥', '육회비빔밥', '꼬막비빔밥', '열무비빔밥', '멍게비빔밥', '중화비빔밥', '회덮밥', '알밥'],
+  ['갈비탕', '삼계탕', '설렁탕', '곰탕', '도가니탕', '추어탕', '해물탕', '매운탕', '감자탕'],
 ]
-// 도전자 모드: 글자 묶음에서 매번 새 제시어를 만들어 냅니다.
-const CHALLENGE_SETS = ['김치찌개밥', '탕수육짬뽕', '라면김밥떡', '제육볶음밥', '순대국밥탕', '냉면만두국']
-const makeChallenge = () => {
-  const chars = [...CHALLENGE_SETS[Math.floor(Math.random() * CHALLENGE_SETS.length)]]
-  const out: string[] = [...chars] // 처음엔 원래 단어 그대로 시작
-  while (out.length < 14) {
-    const next = chars[Math.floor(Math.random() * chars.length)]
-    // 같은 글자가 세 번 연속 나오지 않게
-    if (out[out.length - 1] === next && out[out.length - 2] === next) continue
-    out.push(next)
-  }
-  return out.slice(0, 7).join('') + ' ' + out.slice(7).join('')
-}
+const ROUNDS = 10
+const PENALTY = 1000 // 잘못 누르면 1초 추가
 const MAX_TRIES = 3
 
 const ADJ = ['배고픈', '든든한', '매콤한', '느긋한', '재빠른', '출출한', '야무진', '깔끔한', '용감한', '신중한']
 const NOUN = ['너구리', '국밥', '돈까스', '김밥', '만두', '라면', '떡볶이', '비빔밥', '우동', '탕수육']
 const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
+const shuffle = <T,>(list: T[]) => [...list].sort(() => Math.random() - 0.5)
 const makeNickname = () => `${pick(ADJ)} ${pick(NOUN)} ${1000 + Math.floor(Math.random() * 9000)}`
 
-// 버튼: 제시어에 쓰인 글자 종류만큼, 매번 다른 자리에 놓입니다.
-const makeButtons = (phrase: string) =>
-  [...new Set(phrase.replace(/\s/g, ''))].sort(() => Math.random() - 0.5)
+type Round = { order: string; board: string[]; table: number }
+// 10판: 메뉴판 묶음 순서를 섞고, 판마다 주문 메뉴 하나와 자리 배치를 새로 정합니다.
+const makeRounds = (): Round[] =>
+  shuffle(BOARDS)
+    .slice(0, ROUNDS)
+    .map((board) => ({ order: pick(board), board: shuffle(board), table: 1 + Math.floor(Math.random() * 12) }))
 
 const sec = (ms: number) => (ms / 1000).toFixed(2)
+const grade = (ms: number) =>
+  ms < 8000
+    ? '주문이 들어오기도 전에 누르셨습니다. 전설의 홀 매니저.'
+    : ms < 11000
+    ? '점심 러시도 거뜬합니다. 랭킹을 노려 보세요.'
+    : ms < 15000
+    ? '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'
+    : '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'
 
-// 제시어 빨리 누르기: 몇 개 안 되는 글자 버튼으로 긴 제시어를 처음부터 끝까지 빨리 누르는 게임
+// 주문 받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
 const Page = () => {
-  const [mode, setMode] = useState(0) // 0~3 고정 제시어, -1 도전자 모드
-  const [phrase, setPhrase] = useState(PHRASES[0])
-  const [buttons, setButtons] = useState<string[]>([])
-  const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
+  const [rounds, setRounds] = useState<Round[]>([])
+  const [index, setIndex] = useState(0)
   const [elapsed, setElapsed] = useState(0)
+  const [misses, setMisses] = useState(0)
   const [wrong, setWrong] = useState('')
-  const [pressed, setPressed] = useState('')
   const [tries, setTries] = useState(0)
   const [best, setBest] = useState(0)
   const [rank, setRank] = useState<TapRank[] | null>(null)
   const [registered, setRegistered] = useState('')
   const [nickname, setNickname] = useState('')
   const startedAt = useRef(0)
+  const penalty = useRef(0)
   const frame = useRef(0)
   const today = dateKey()
-
-  const target = [...phrase.replace(/\s/g, '')]
-  const ranked = mode === 0
-  const triesLeft = mode === -1 ? Infinity : MAX_TRIES - tries
+  const triesLeft = MAX_TRIES - tries
 
   useEffect(() => {
     fetchTapRank(10).then(setRank)
+    setTries(Number(getFlag(`orderTries:${today}`)) || 0)
+    setBest(Number(getFlag('orderBest')) || 0)
+    setNickname(getFlag('tapNickname'))
     return () => cancelAnimationFrame(frame.current)
-  }, [])
-
-  // 제시어를 바꾸면 오늘 남은 횟수와 최고 기록을 불러옵니다.
-  useEffect(() => {
-    cancelAnimationFrame(frame.current)
-    setPhase('idle')
-    setElapsed(0)
-    setProgress(0)
-    setRegistered('')
-    if (mode === -1) {
-      setPhrase(makeChallenge())
-      setTries(0)
-      setBest(0)
-    } else {
-      setPhrase(PHRASES[mode])
-      setTries(Number(getFlag(`tapTries:${today}:${mode}`)) || 0)
-      setBest(Number(getFlag(`tapBest:${mode}`)) || 0)
-    }
-  }, [mode, today])
+  }, [today])
 
   const start = () => {
     if (triesLeft <= 0) return
-    const nextPhrase = mode === -1 && phase === 'done' ? makeChallenge() : phrase
-    setPhrase(nextPhrase)
-    setButtons(makeButtons(nextPhrase))
-    setProgress(0)
+    setRounds(makeRounds())
+    setIndex(0)
+    setMisses(0)
     setRegistered('')
     setElapsed(0)
+    penalty.current = 0
+    setTries(tries + 1)
+    setFlag(`orderTries:${today}`, String(tries + 1))
     setPhase('playing')
-    if (mode !== -1) {
-      setTries(tries + 1)
-      setFlag(`tapTries:${today}:${mode}`, String(tries + 1))
-    }
     startedAt.current = performance.now()
     const tick = () => {
-      setElapsed(performance.now() - startedAt.current)
+      setElapsed(performance.now() - startedAt.current + penalty.current)
       frame.current = requestAnimationFrame(tick)
     }
     frame.current = requestAnimationFrame(tick)
   }
 
-  const tap = (char: string) => {
+  const tap = (name: string) => {
     if (phase !== 'playing') return
-    if (char !== target[progress]) {
-      setWrong(char)
-      setTimeout(() => setWrong(''), 220)
+    if (name !== rounds[index].order) {
+      penalty.current += PENALTY
+      setMisses((m) => m + 1)
+      setWrong(name)
+      setTimeout(() => setWrong(''), 250)
       return
     }
-    setPressed(char)
-    setTimeout(() => setPressed(''), 90)
-    const next = progress + 1
-    setProgress(next)
-    if (next === target.length) {
-      cancelAnimationFrame(frame.current)
-      const ms = Math.round(performance.now() - startedAt.current)
-      setElapsed(ms)
-      setPhase('done')
-      if (mode !== -1 && (!best || ms < best)) {
-        setBest(ms)
-        setFlag(`tapBest:${mode}`, String(ms))
-      }
+    if (index + 1 < ROUNDS) {
+      setIndex(index + 1)
+      return
+    }
+    cancelAnimationFrame(frame.current)
+    const ms = Math.round(performance.now() - startedAt.current + penalty.current)
+    setElapsed(ms)
+    setPhase('done')
+    if (!best || ms < best) {
+      setBest(ms)
+      setFlag('orderBest', String(ms))
     }
   }
 
@@ -147,100 +131,69 @@ const Page = () => {
     if (ok) fetchTapRank(10).then(setRank)
   }
 
-  const grade = (ms: number) =>
-    ms < 3500 ? '손가락이 안 보입니다. 혹시 선수십니까?' : ms < 5000 ? '상당한 실력입니다. 랭킹을 노려 보세요.' : ms < 7000 ? '무난합니다. 한 번 더 하면 줄어듭니다.' : '천천히, 정확하게. 다음엔 더 빨라집니다.'
-
-  // 제시어 두 줄: 누른 글자까지 색이 채워집니다.
-  let counter = 0
-  const lines = phrase.split(' ').map((line) => [...line].map((char) => ({ char, index: counter++ })))
+  const round = rounds[index]
 
   return (
-    <Container title='제시어 빨리 누르기'>
+    <Container title='주문 받기'>
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
-        <div className='flex gap-2 overflow-x-auto -mx-5 px-5 pb-1'>
-          {PHRASES.map((_, i) => (
-            <div key={i} className='shrink-0'>
-              <Chip selected={mode === i} onClick={() => phase !== 'playing' && setMode(i)}>
-                {i === 0 ? '기본 (랭킹)' : `제시어 ${i + 1}`}
-              </Chip>
-            </div>
-          ))}
-          <div className='shrink-0'>
-            <Chip selected={mode === -1} onClick={() => phase !== 'playing' && setMode(-1)}>
-              도전자 모드
-            </Chip>
-          </div>
-        </div>
-
         <section className='bg-customs-gray-100 rounded-[28px] overflow-hidden'>
-          {/* 위쪽 띠: 시간 */}
+          {/* 위쪽 띠: 진행 상황과 시간 */}
           <div className='bg-customs-gray-10 px-5 py-4 flex items-center justify-between rounded-b-[28px]'>
-            <span className='text-caption1 text-customs-gray-75'>
-              {mode === -1 ? '매번 새 제시어 · 무제한' : `오늘 남은 도전 ${Math.max(0, triesLeft)}번`}
+            <span className='text-label2 text-customs-gray-75'>
+              {phase === 'playing' ? `주문 ${index + 1} / ${ROUNDS}` : `오늘 남은 도전 ${Math.max(0, triesLeft)}번`}
             </span>
             <span className='px-4 py-1 rounded-full bg-[#2b292e] font-paperlogy font-bold text-[26px] text-customs-orange-50 tabular-nums'>
               {sec(elapsed)}
             </span>
           </div>
 
-          <div className='px-5 pt-5 pb-7 flex flex-col items-center'>
-            <span className='px-4 py-[6px] rounded-full bg-customs-gray-10 text-customs-gray-100 text-label1'>제시어</span>
-            <div className='mt-4 text-center font-paperlogy font-bold text-[30px] leading-[130%] tracking-[1px]'>
-              {lines.map((line, i) => (
-                <div key={i}>
-                  {line.map(({ char, index }) => (
-                    <span
-                      key={index}
-                      className={
-                        index < progress
-                          ? 'text-customs-orange-50'
-                          : index === progress && phase === 'playing'
-                          ? 'text-customs-gray-10 underline decoration-customs-orange-50 decoration-4 underline-offset-4'
-                          : 'text-customs-gray-10'
-                      }
-                    >
-                      {mode === -1 && phase === 'idle' ? '?' : char}
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            {phase === 'playing' && (
-              <div className='flex flex-wrap justify-center gap-x-4 gap-y-5 mt-8 max-w-[300px]'>
-                {buttons.map((char) => (
-                  <button
-                    key={char}
-                    onPointerDown={() => tap(char)}
-                    className={`w-[80px] h-[80px] rounded-full font-paperlogy font-bold text-[32px] select-none touch-manipulation transition-transform duration-75 ${
-                      wrong === char
-                        ? 'bg-customs-gray-25 text-customs-gray-100 shadow-[0_3px_0_#19181b] translate-y-[5px]'
-                        : pressed === char
-                        ? 'bg-customs-orange-50 text-customs-gray-100 shadow-[0_2px_0_#c2531b] translate-y-[6px]'
-                        : 'bg-customs-orange-50 text-customs-gray-100 shadow-[0_8px_0_#c2531b,0_12px_0_rgba(0,0,0,0.08)]'
-                    }`}
-                  >
-                    {char}
-                  </button>
-                ))}
+          <div className='px-4 pt-5 pb-6'>
+            {phase === 'idle' && (
+              <div className='flex flex-col items-center text-center px-2'>
+                <img className='w-[110px] h-[102px] object-contain' src='/comment.png' alt='먹대리' />
+                <h2 className='text-heading3 font-paperlogy text-customs-gray-10 mt-4'>점심 러시입니다. 주문 받아 주세요!</h2>
+                <p className='text-label2 text-customs-gray-50 mt-2'>
+                  주문이 들어오면 메뉴판에서 같은 메뉴를 최대한 빨리 누르세요.
+                  <br />
+                  총 {ROUNDS}건, 잘못 누르면 1초가 더해집니다.
+                  {best > 0 && (
+                    <>
+                      <br />내 최고 기록 <b className='text-customs-orange-50'>{sec(best)}초</b>
+                    </>
+                  )}
+                </p>
               </div>
             )}
 
-            {phase === 'idle' && (
-              <p className='text-label2 text-customs-gray-50 mt-5 text-center'>
-                동그란 버튼이 글자 종류만큼 나옵니다.
-                <br />
-                제시어를 처음부터 끝까지 순서대로 누르세요.
-                {best > 0 && (
-                  <>
-                    <br />내 최고 기록 <b className='text-customs-orange-50'>{sec(best)}초</b>
-                  </>
-                )}
-              </p>
+            {phase === 'playing' && round && (
+              <>
+                {/* 주문서 */}
+                <div key={index} className='reel-tick rounded-[18px] bg-customs-orange-95-bg px-4 py-4 text-center'>
+                  <p className='text-caption1 text-customs-gray-50'>{round.table}번 테이블 주문이요!</p>
+                  <h2 className='font-paperlogy font-bold text-[28px] leading-[125%] text-customs-orange-50 mt-1'>{round.order}</h2>
+                </div>
+                {/* 메뉴판: 판마다 메뉴와 자리가 바뀝니다 */}
+                <div className='grid grid-cols-3 gap-x-2 gap-y-[14px] mt-5'>
+                  {round.board.map((name) => (
+                    <button
+                      key={name}
+                      onPointerDown={() => tap(name)}
+                      className={`h-[68px] px-1 rounded-[16px] font-paperlogy font-bold text-[15px] leading-[125%] break-keep select-none touch-manipulation transition-transform duration-75 ${
+                        wrong === name
+                          ? 'bg-customs-gray-25 text-customs-gray-100 shadow-[0_2px_0_#19181b] translate-y-[4px]'
+                          : 'bg-customs-gray-100 text-customs-gray-10 border-2 border-customs-gray-10 shadow-[0_6px_0_#19181b] active:translate-y-[4px] active:shadow-[0_2px_0_#19181b]'
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+                <p className='text-caption1 text-customs-gray-50 text-center mt-5 h-4'>{misses > 0 && `잘못 누름 ${misses}번 (+${misses}초)`}</p>
+              </>
             )}
 
             {phase === 'done' && (
-              <div className='mt-6 w-full text-center pop-in'>
+              <div className='text-center pop-in'>
                 <div className='rounded-[20px] bg-customs-orange-95-bg px-5 py-5'>
                   <p className='text-label2 text-customs-gray-25'>{grade(elapsed)}</p>
                   <h2 className='font-paperlogy font-bold text-[44px] leading-[120%] text-customs-orange-50 mt-1'>
@@ -248,25 +201,24 @@ const Page = () => {
                     <span className='text-[22px] text-customs-gray-10'> 초</span>
                   </h2>
                   <p className='text-caption1 text-customs-gray-50 mt-1'>
-                    {mode !== -1 && best === Math.round(elapsed) ? '내 최고 기록입니다!' : best > 0 ? `내 최고 기록 ${sec(best)}초` : ''}
+                    주문 {ROUNDS}건 처리{misses > 0 && ` · 잘못 누름 ${misses}번`}
+                    {best === Math.round(elapsed) ? ' · 내 최고 기록!' : best > 0 ? ` · 최고 ${sec(best)}초` : ''}
                   </p>
                 </div>
-                {ranked && (
-                  <div className='mt-3'>
-                    {registered ? (
-                      <p className='text-label2 text-customs-orange-50'>{registered}</p>
-                    ) : (
-                      <Button type='sub' onClick={register}>
-                        이 기록 오늘의 랭킹에 넣기
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <div className='mt-3'>
+                  {registered ? (
+                    <p className='text-label2 text-customs-orange-50'>{registered}</p>
+                  ) : (
+                    <Button type='sub' onClick={register}>
+                      이 기록 오늘의 랭킹에 넣기
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
             {phase !== 'playing' && (
-              <div className='mt-5 w-full'>
+              <div className='mt-5 px-1'>
                 <button
                   onClick={start}
                   disabled={triesLeft <= 0}
@@ -276,7 +228,7 @@ const Page = () => {
                       : 'bg-customs-orange-50 text-customs-gray-100 shadow-[0_6px_0_#c2531b] active:translate-y-[4px] active:shadow-[0_2px_0_#c2531b]'
                   }`}
                 >
-                  {triesLeft <= 0 ? '오늘 도전은 끝! 내일 다시 만나요' : phase === 'done' ? (mode === -1 ? '다음 제시어' : `다시 도전 (${triesLeft}번 남음)`) : '시작'}
+                  {triesLeft <= 0 ? '오늘 영업 종료! 내일 다시 만나요' : phase === 'done' ? `다시 도전 (${triesLeft}번 남음)` : '영업 시작'}
                 </button>
               </div>
             )}
@@ -284,7 +236,7 @@ const Page = () => {
         </section>
 
         <Card title='오늘의 랭킹 TOP 10'>
-          <p className='text-caption1 text-customs-gray-50 -mt-2 mb-4'>종목: 기본 제시어 · 매일 새로 시작합니다.</p>
+          <p className='text-caption1 text-customs-gray-50 -mt-2 mb-4'>주문 {ROUNDS}건을 가장 빨리 받은 순서 · 매일 새로 시작합니다.</p>
           {!rank ? (
             <p className='text-label2 text-customs-gray-50'>랭킹을 불러오는 중입니다…</p>
           ) : rank.length === 0 ? (
