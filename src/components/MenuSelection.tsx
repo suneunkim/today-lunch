@@ -11,11 +11,13 @@ const MenuSelection = ({ selectedMenu, handleClick }: Props) => {
 
   return (
     <section className='flex flex-col gap-1'>
-      <OutlinedButton
-        onClick={() => handleClick('전체')}
-        all={true}
-        type={isAllSelected ? 'selected' : 'outlined'}
-      />
+      <div className='flex'>
+        <OutlinedButton
+          onClick={() => handleClick('전체')}
+          all={true}
+          type={isAllSelected ? 'selected' : 'outlined'}
+        />
+      </div>
       {menu.map((row, rowIndex) => (
         <div key={rowIndex} className='flex gap-1'>
           {row.map((category, index) => (

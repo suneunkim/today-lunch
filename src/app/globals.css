@@ -4,9 +4,7 @@
 
 /* 앱(안드로이드/iOS)에서 상태바·내비게이션바에 화면이 가리지 않도록 */
 body {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: #19181b;
+  background: #e0dcd0;
   -webkit-tap-highlight-color: transparent;
 }
 

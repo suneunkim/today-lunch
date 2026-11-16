@@ -2,7 +2,7 @@ const Background = ({ children }: { children: React.ReactNode }) => {
   // pl은 너비 360px과 480px에 맞춰서 제목 표기
   // pr은 서비스 이용 수 보여주는 컴포넌트 간격 용도
   return (
-    <section className='w-full h-[703px] pl-10 pt-10 tablet:pl-[100px] pr-8 tablet:pr-[86px] bg-customs-orange-50 text-customs-gray-100  relative rounded-b-3xl overflow-hidden'>
+    <section className='w-full h-[calc(703px+env(safe-area-inset-top,0px))] pl-10 pt-[calc(40px+env(safe-area-inset-top,0px))] tablet:pl-[100px] pr-8 tablet:pr-[86px] bg-customs-orange-50 text-customs-gray-100  relative rounded-b-3xl overflow-hidden'>
       {children}
 
       <article className='w-[480px] z-10 absolute left-[-60px] tablet:left-0 bottom-0 '>

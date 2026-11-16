@@ -13,6 +13,7 @@ import ShareButton from '@/components/ShareButton'
 import SuggestionItem from './SuggestionItem'
 import Divider from './Divider'
 import Clip from './Clip'
+import { renderDocCard } from '@/lib/shareCard'
 
 interface Props {
   categories: string[]
@@ -98,14 +99,26 @@ const MenuSuggestionForm = ({ categories, filters }: Props) => {
             {isSubmitted ? '결재 완료' : '이걸로 할게!'}
           </Button>
         </div>
-        <div className='flex'>
+        <div className='flex gap-[10px]'>
           <ShareButton
-            label={isSubmitted ? '동료에게 결과 공유하기' : '동료에게 제안서 공유하기'}
+            label={isSubmitted ? '결과 공유하기' : '제안서 공유하기'}
             text={shareMessage}
+            image={() =>
+              renderDocCard({
+                title: '오늘점심 제안서',
+                showCheckbox: true,
+                stamped: isSubmitted,
+                lines: suggestions.map((menu, i) => ({
+                  label: `${i + 1}안. ${menu.name}`,
+                  sub: menu.shortDescription,
+                  checked: isSubmitted && menu.name === selectedMenu,
+                })),
+              })
+            }
           />
           {!isSubmitted && (
-            <Button type='ghost' onClick={handleDislike}>
-              선택한 메뉴 그만 추천받기
+            <Button type='sub' onClick={handleDislike}>
+              이 메뉴 그만 추천받기
             </Button>
           )}
         </div>

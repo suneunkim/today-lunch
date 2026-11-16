@@ -1,21 +1,22 @@
 import { HeaderTitleType } from '@/types/types'
-import Footer from './Footer'
+import BottomNav from './BottomNav'
 import Header from './Header'
 
 interface Props {
   isHeader?: boolean
   title: HeaderTitleType
   onlyTitle?: boolean
+  nav?: boolean // 하단 탭 표시 여부
   children: React.ReactNode
 }
 
-const Container = ({ isHeader = true, title, onlyTitle = false, children }: Props) => {
+const Container = ({ isHeader = true, title, onlyTitle = false, nav = true, children }: Props) => {
   return (
     <div className='min-w-[360px] max-w-[480px] mx-auto'>
       {isHeader && <Header title={title} onlyTitle={onlyTitle} />}
-      {isHeader && <div className='pt-12' />}
+      {isHeader && <div className='h-[calc(48px+env(safe-area-inset-top,0px))] bg-customs-gray-100' />}
       {children}
-      <Footer />
+      {nav && <BottomNav />}
     </div>
   )
 }

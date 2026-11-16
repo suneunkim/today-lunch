@@ -21,6 +21,44 @@ export const shareText = async (title: string, text: string) => {
   }
 }
 
+const toBase64 = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result).split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+
+// 이미지 카드를 공유합니다. 이미지 공유가 안 되는 환경이면 글로 공유하거나 이미지를 내려받습니다.
+export const shareImage = async (blob: Blob, fileName: string, text: string) => {
+  const title = '오늘 점심은 먹대리가'
+  try {
+    if (isNative()) {
+      const { Filesystem, Directory } = await import('@capacitor/filesystem')
+      const { Share } = await import('@capacitor/share')
+      const saved = await Filesystem.writeFile({
+        path: fileName,
+        data: await toBase64(blob),
+        directory: Directory.Cache,
+      })
+      await Share.share({ title, text, files: [saved.uri], dialogTitle: title })
+      return 'shared'
+    }
+    const file = new File([blob], fileName, { type: 'image/png' })
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ title, text, files: [file] })
+      return 'shared'
+    }
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = fileName
+    link.click()
+    return 'downloaded'
+  } catch {
+    return 'cancelled'
+  }
+}
+
 const NOTIFY_MESSAGES = [
   '점심 30분 전입니다. 메뉴 결재 올리셨습니까?',
   '곧 점심시간입니다. 먹대리가 메뉴 제안드리겠습니다!',

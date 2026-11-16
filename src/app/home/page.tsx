@@ -29,7 +29,7 @@ const page = () => {
 
   return (
     <Container title='오늘 점심은 먹대리가' onlyTitle={true}>
-      <div className='bg-customs-beige-85 flex flex-col gap-5 p-5'>
+      <div className='bg-customs-beige-85 flex flex-col gap-5 p-5 pb-28'>
         <WeatherButton iconName='날씨' smallWeather={true} />
         <section className='w-full rounded-[20px] bg-customs-gray-100 flex flex-col justify-between pb-6'>
           <div className='pt-5 pl-5 tablet:pl-20'>

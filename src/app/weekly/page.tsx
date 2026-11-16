@@ -9,6 +9,7 @@ import Clip from '@/components/features/result/Clip'
 import { findMenu } from '@/app/data/food'
 import { recommend } from '@/lib/recommend'
 import { dateKey, getWeeklyPlan, saveWeeklyPlan } from '@/lib/storage'
+import { renderDocCard } from '@/lib/shareCard'
 
 const WEEKDAYS = ['월', '화', '수', '목', '금']
 
@@ -72,7 +73,7 @@ const Page = () => {
 
   return (
     <Container title='주간 점심 계획서'>
-      <div className='p-5 bg-customs-orange-50 min-h-[calc(100vh-48px)]'>
+      <div className='p-5 pb-28 bg-customs-orange-50 min-h-[calc(100vh-48px)]'>
         <div className='relative mt-[16px]'>
           <Clip />
           <div className='relative'>
@@ -118,9 +119,22 @@ const Page = () => {
             <Button type='secondary' onClick={() => update(drawWeek())}>
               전부 다시 짜기
             </Button>
-            <div className='[&_button]:text-customs-gray-100'>
-              <ShareButton label='팀 단톡방에 계획서 공유하기' text={shareText} />
-            </div>
+            <ShareButton
+              label='팀 단톡방에 계획서 공유하기'
+              text={shareText}
+              image={() =>
+                renderDocCard({
+                  title: '주간 점심 계획서',
+                  meta: `${dateOf(0)} ~ ${dateOf(4)} · 기안자 먹대리`,
+                  lines: menus.map((name, i) => ({
+                    label: name,
+                    sub: findMenu(name)?.shortDescription,
+                    badge: WEEKDAYS[i],
+                    checked: i === todayIndex,
+                  })),
+                })
+              }
+            />
           </section>
         </div>
       </div>

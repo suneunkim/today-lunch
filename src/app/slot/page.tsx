@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
+import Chip from '@/components/elements/Chip'
 import DocTitle from '@/components/elements/DocTitle'
 import Stamp from '@/components/Stamp'
 import Clip from '@/components/features/result/Clip'
 import MapPanel from '@/components/features/map/MapPanel'
 import { MENUS } from '@/app/data/menus'
+import { menu as categoryRows } from '@/app/data/data'
 import { recommend } from '@/lib/recommend'
 import { trackPick, trackUse } from '@/lib/firebase/stats'
 import { addHistory } from '@/lib/storage'
@@ -25,13 +27,14 @@ const Page = () => {
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<MenuType | null>(null)
   const [approved, setApproved] = useState(false)
+  const [category, setCategory] = useState('전체')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), [])
 
   const spin = () => {
     if (spinning) return
-    const [picked] = recommend({ categories: ['전체'], count: 1, exclude: result ? [result.name] : [] })
+    const [picked] = recommend({ categories: [category], count: 1, exclude: result ? [result.name] : [] })
     if (!picked) return
     setSpinning(true)
     setResult(null)
@@ -40,6 +43,8 @@ const Page = () => {
 
     // 처음엔 빠르게, 끝으로 갈수록 느리게 넘어가다가 멈춥니다.
     const total = 24
+    const reel =
+      category === '전체' ? MENUS : MENUS.filter((m) => m.cats.some((c) => c === category))
     const step = (i: number) => {
       if (i >= total) {
         setDisplay(picked.name)
@@ -48,7 +53,7 @@ const Page = () => {
         setSpinning(false)
         return
       }
-      setDisplay(MENUS[Math.floor(Math.random() * MENUS.length)].name)
+      setDisplay(reel[Math.floor(Math.random() * reel.length)].name)
       setTick((t) => t + 1)
       timer.current = setTimeout(() => step(i + 1), 60 + Math.pow(i, 2) * 0.55)
     }
@@ -64,7 +69,7 @@ const Page = () => {
 
   return (
     <Container title='먹대리 전결'>
-      <div className='p-5 bg-customs-orange-50 min-h-[calc(100vh-48px)]'>
+      <div className='p-5 pb-28 bg-customs-orange-50 min-h-[calc(100vh-48px)]'>
         <div className='relative mt-[16px]'>
           <Clip />
           {approved && <Stamp />}
@@ -102,7 +107,27 @@ const Page = () => {
             </section>
           </div>
 
-          <section className='flex flex-col gap-[10px] mt-6 mb-5'>
+          {/* 범위: 전체에서 뽑을지, 한 종류 안에서 뽑을지 */}
+          <div className='flex gap-2 mt-6 overflow-x-auto pb-1 -mx-5 px-5'>
+            {['전체', ...categoryRows.flat()].map((name) => (
+              <div key={name} className='shrink-0'>
+                <Chip
+                  selected={category === name}
+                  onClick={() => {
+                    if (spinning) return
+                    setCategory(name)
+                    setResult(null)
+                    setApproved(false)
+                    setDisplay('？？？')
+                  }}
+                >
+                  {name}
+                </Chip>
+              </div>
+            ))}
+          </div>
+
+          <section className='flex flex-col gap-[10px] mt-4 mb-5'>
             {!result ? (
               <Button type='primary' onClick={spin} disabled={spinning}>
                 {spinning ? '결재 올리는 중…' : '전결로 올리기'}

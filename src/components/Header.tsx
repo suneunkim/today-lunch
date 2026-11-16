@@ -9,8 +9,9 @@ interface Props {
 const Header = ({ title, onlyTitle = false }: Props) => {
   return (
     <div
+      style={{ width: 'calc(100% - 40px)', maxWidth: 440 }}
       className={`
-      fixed flex items-center px-5 bg-customs-gray-100 h-12 max-w-[480px] w-full text-body1Normal z-20
+      fixed top-0 flex items-center px-5 bg-customs-gray-100 box-content h-12 pt-[env(safe-area-inset-top,0px)] text-body1Normal z-20
       ${onlyTitle ? 'justify-center' : 'justify-between'}
       `}
     >

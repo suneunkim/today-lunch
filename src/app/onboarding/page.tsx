@@ -82,7 +82,7 @@ const Page = () => {
   const type = lunchTypeOf(answers)
 
   return (
-    <Container title='취향 조사' onlyTitle={true}>
+    <Container title='취향 조사' onlyTitle={true} nav={false}>
       <div className='bg-customs-beige-85 p-5 min-h-[calc(100vh-48px)] flex flex-col gap-5'>
         <section className='rounded-[20px] bg-customs-gray-100 px-5 pt-5 pb-4 flex justify-between items-end'>
           <div>
@@ -168,9 +168,14 @@ const Page = () => {
         )}
 
         {!isResult && (
-          <Button type='ghost' onClick={() => finish(false)}>
-            건너뛰기 (나중에 설정에서 할 수 있어요)
-          </Button>
+          <div className='mt-auto pt-4'>
+            <Button type='primary' onClick={() => finish(false)}>
+              건너뛰기
+            </Button>
+            <p className='text-caption1 text-customs-gray-50 text-center mt-2'>
+              나중에 설정에서 언제든 다시 할 수 있습니다.
+            </p>
+          </div>
         )}
       </div>
     </Container>

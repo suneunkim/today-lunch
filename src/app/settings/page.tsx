@@ -8,12 +8,15 @@ import Chip from '@/components/elements/Chip'
 import { MENUS } from '@/app/data/menus'
 import { MAP_LABEL, MapApp } from '@/lib/maps'
 import { cancelLunchNotifications, isNative, scheduleLunchNotifications } from '@/lib/native'
+import { lunchTypeOf } from '@/lib/lunchType'
+import { MenuTag } from '@/types/types'
 import {
   addDislike,
   getPrefs,
   getSettings,
   Prefs,
   removeDislike,
+  savePrefs,
   saveSettings,
   Settings,
 } from '@/lib/storage'
@@ -22,6 +25,23 @@ const inputStyle =
   'flex-1 min-w-0 h-11 px-3 rounded-[10px] border border-customs-gray-90 text-label2 bg-customs-gray-100'
 const smallButton = 'h-11 px-4 rounded-[10px] bg-customs-gray-10 text-customs-gray-100 text-label1 shrink-0'
 const hint = 'text-caption1 text-customs-gray-50 mt-2'
+
+const SPICY: { value: Prefs['spicy']; label: string }[] = [
+  { value: 'love', label: '좋아해요' },
+  { value: 'ok', label: '보통' },
+  { value: 'no', label: '못 먹어요' },
+]
+const AVOID: { tag: MenuTag; label: string }[] = [
+  { tag: '해산물', label: '해산물' },
+  { tag: '내장', label: '내장·선지·순대' },
+  { tag: '향신료', label: '고수·마라' },
+]
+const LINKS = [
+  { href: '/stats', label: '이용 현황' },
+  { href: '/project', label: '프로젝트 팀 소개' },
+  { href: '/licenses', label: '소스 라이센스' },
+  { href: '/privacy', label: '개인정보처리방침' },
+]
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -42,6 +62,11 @@ const Page = () => {
   if (!settings || !prefs) return <Container title='설정'>{null}</Container>
 
   const update = (patch: Partial<Settings>) => setSettings(saveSettings(patch))
+  // 취향을 고치면 점심 유형 이름도 맞춰서 바꿉니다. (조사를 한 적이 있을 때만)
+  const updatePrefs = (patch: Partial<Prefs>) => {
+    const next = { ...prefs, ...patch }
+    setPrefs(savePrefs({ ...patch, typeName: prefs.typeName ? lunchTypeOf(next).name : '' }))
+  }
 
   const applyNotify = async (enabled: boolean, hour: number, minute: number) => {
     if (!enabled) {
@@ -86,8 +111,39 @@ const Page = () => {
             {prefs.typeName || '아직 취향 조사를 하지 않았습니다.'}
           </p>
           <Link href='/onboarding' className='inline-block mt-3 text-label1 underline text-customs-gray-25'>
-            취향 조사 {prefs.typeName ? '다시 하기' : '하러 가기'}
+            취향 조사 {prefs.typeName ? '처음부터 다시 하기' : '하러 가기'}
           </Link>
+
+          <p className='text-label1 text-customs-gray-25 mt-5 mb-2'>매운 음식</p>
+          <div className='flex flex-wrap gap-2'>
+            {SPICY.map((option) => (
+              <Chip
+                key={option.value}
+                selected={prefs.spicy === option.value}
+                onClick={() => updatePrefs({ spicy: option.value })}
+              >
+                {option.label}
+              </Chip>
+            ))}
+          </div>
+          <p className='text-label1 text-customs-gray-25 mt-4 mb-2'>못 먹는 것</p>
+          <div className='flex flex-wrap gap-2'>
+            {AVOID.map((option) => (
+              <Chip
+                key={option.tag}
+                selected={prefs.avoid.includes(option.tag)}
+                onClick={() =>
+                  updatePrefs({
+                    avoid: prefs.avoid.includes(option.tag)
+                      ? prefs.avoid.filter((t) => t !== option.tag)
+                      : [...prefs.avoid, option.tag],
+                  })
+                }
+              >
+                {option.label}
+              </Chip>
+            ))}
+          </div>
         </Card>
 
         <Card title='점심시간 · 알림'>
@@ -190,6 +246,30 @@ const Page = () => {
               ))}
             </div>
           )}
+        </Card>
+
+        <Card title='정보'>
+          <ul className='flex flex-col'>
+            {LINKS.map((link) => (
+              <li key={link.href} className='border-b border-customs-gray-95 last:border-b-0'>
+                <Link href={link.href} className='flex justify-between py-3 text-label2 text-customs-gray-25'>
+                  {link.label}
+                  <span className='text-customs-gray-75'>›</span>
+                </Link>
+              </li>
+            ))}
+            <li>
+              <a
+                href='https://forms.gle/jsQ1tkDHeBaTcLpZ8'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex justify-between py-3 text-label2 text-customs-gray-25'
+              >
+                의견 보내기
+                <span className='text-customs-gray-75'>›</span>
+              </a>
+            </li>
+          </ul>
         </Card>
 
         <p className='text-caption1 text-customs-gray-50 px-1'>

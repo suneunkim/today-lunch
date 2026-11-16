@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Chip from '@/components/elements/Chip'
-import { buildMapQuery, MAP_LABEL, MapApp, mapSearchUrl } from '@/lib/maps'
+import { buildMapQuery, MapApp, mapSearchUrl } from '@/lib/maps'
 import { getFavorites, getSettings, saveFavorite, saveSettings } from '@/lib/storage'
 
 const EXTRAS = ['', '맛집', '혼밥', '점심특선']
@@ -57,10 +57,9 @@ const MapPanel = ({ menu }: { menu: string }) => {
   }
 
   if (!menu) return null
-  const apps: MapApp[] = mapApp === 'kakao' ? ['kakao', 'naver'] : ['naver', 'kakao']
 
   return (
-    <section className='px-6 py-7 bg-customs-yellow-70 rounded-[20px] text-customs-gray-10'>
+    <section className='px-6 py-7 bg-customs-gray-100 rounded-[20px] text-customs-gray-10'>
       <h4 className='text-headline2 font-paperlogy'>‘{menu}’ 먹으러 갈 곳 찾기</h4>
 
       {/* 회사 위치 */}
@@ -103,23 +102,22 @@ const MapPanel = ({ menu }: { menu: string }) => {
       </div>
 
       <div className='flex gap-2 mt-4'>
-        {apps.map((app, i) => (
-          <button
-            key={app}
-            onClick={() => open(app, menu, extra)}
-            className={`flex-1 py-4 rounded-[14px] text-body1Normal ${
-              i === 0
-                ? 'bg-customs-gray-10 text-customs-gray-100'
-                : 'bg-customs-gray-100 text-customs-gray-10'
-            }`}
-          >
-            {MAP_LABEL[app]}에서 찾기
-          </button>
-        ))}
+        <button
+          onClick={() => open('kakao', menu, extra)}
+          className='flex-1 py-[14px] rounded-[14px] text-label1 bg-[#FEE500] text-[#191919]'
+        >
+          카카오맵에서 찾기
+        </button>
+        <button
+          onClick={() => open('naver', menu, extra)}
+          className='flex-1 py-[14px] rounded-[14px] text-label1 bg-[#03C75A] text-white'
+        >
+          네이버 지도에서 찾기
+        </button>
       </div>
 
       {/* 단골집 메모 */}
-      <div className='mt-5 pt-4 border-t border-customs-gray-10 border-opacity-20'>
+      <div className='mt-5 pt-4 border-t border-customs-gray-90'>
         {favorite && !editingFavorite ? (
           <div className='flex items-center justify-between gap-2'>
             <p className='text-label2'>

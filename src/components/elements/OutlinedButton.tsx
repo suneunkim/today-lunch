@@ -20,11 +20,12 @@ interface AllProps extends PropsBase {
 type Props = CategoryProps | AllProps
 
 const baseStyles =
-  'w-full h-[56px] text-customs-gray-10 text-label3 border flex justify-center items-center gap-[6px] rounded-md bg-customs-gray-100'
+  'flex-1 basis-0 min-w-0 h-[56px] text-customs-gray-10 text-label3 border flex justify-center items-center gap-[6px] rounded-md bg-customs-gray-100'
 
 const styles = {
   outlined: 'border-customs-gray-90',
-  selected: 'border-customs-orange-50 bg-customs-orange-95-bg border-2',
+  // 테두리 두께를 바꾸면 옆 칸이 밀리므로, 안쪽 그림자로 두껍게 보이게만 합니다.
+  selected: 'border-customs-orange-50 bg-customs-orange-95-bg shadow-[inset_0_0_0_1px_#fe5f01]',
 }
 
 const OutlinedButton = ({ all = false, type, selected, name, onClick }: Props) => {
