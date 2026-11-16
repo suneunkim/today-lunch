@@ -1,0 +1,86 @@
+// 이용 집계 (Firestore). 모든 호출은 화면을 막지 않습니다:
+// 쓰기는 기다리지 않고, 읽기는 몇 초 안에 답이 없으면 포기합니다.
+import { db, firebaseEnabled } from '@/firebase'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  limit,
+  orderBy,
+  query,
+  setDoc,
+} from 'firebase/firestore'
+import { dateKey, getFlag, setFlag } from '@/lib/storage'
+
+const withTimeout = <T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T> =>
+  Promise.race([
+    promise.catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+
+const bump = (path: [string, string], fields: Record<string, number>) => {
+  if (!firebaseEnabled) return
+  const data = Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, increment(v)]))
+  setDoc(doc(db, ...path), data, { merge: true }).catch(() => {})
+}
+
+const totalDoc: [string, string] = ['serviceClick', 'serviceClickCount']
+
+// 추천 1회 = 이용 1회. 기기별 첫 이용(설치 수)과 하루 첫 이용(일간 이용자 수)도 함께 셉니다.
+export const trackUse = () => {
+  const today = dateKey()
+  const total: Record<string, number> = { useCount: 1 }
+  const daily: Record<string, number> = { uses: 1 }
+  if (!getFlag('installed')) {
+    total.installs = 1
+    setFlag('installed', today)
+  }
+  if (getFlag('lastUseDay') !== today) {
+    daily.users = 1
+    setFlag('lastUseDay', today)
+  }
+  bump(totalDoc, total)
+  bump(['dailyStats', today], daily)
+}
+
+// "이걸로 할게!" 로 결재된 메뉴 집계
+export const trackPick = (menuName: string) => {
+  bump(['menuCounts', menuName], { count: 1 })
+  bump(['dailyStats', dateKey()], { picks: 1 })
+}
+
+export const getTotals = async () => {
+  if (!firebaseEnabled) return null
+  const snap = await withTimeout(getDoc(doc(db, ...totalDoc)), null)
+  if (!snap || !snap.exists()) return null
+  const data = snap.data()
+  return { useCount: (data.useCount as number) ?? 0, installs: (data.installs as number) ?? 0 }
+}
+
+export const fetchTopMenu = async (count = 5) => {
+  if (!firebaseEnabled) return []
+  const q = query(collection(db, 'menuCounts'), orderBy('count', 'desc'), limit(count))
+  const snap = await withTimeout(getDocs(q), null)
+  if (!snap) return []
+  return snap.docs.map((d) => ({ name: d.id, count: d.data().count as number }))
+}
+
+export type DailyStat = { date: string; uses: number; users: number; picks: number }
+
+export const fetchDailyStats = async (days = 14): Promise<DailyStat[]> => {
+  const dates = Array.from({ length: days }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (days - 1 - i))
+    return dateKey(d)
+  })
+  if (!firebaseEnabled) return dates.map((date) => ({ date, uses: 0, users: 0, picks: 0 }))
+  const snaps = await Promise.all(
+    dates.map((date) => withTimeout(getDoc(doc(db, 'dailyStats', date)), null))
+  )
+  return dates.map((date, i) => {
+    const data = snaps[i]?.exists() ? snaps[i]!.data() : {}
+    return { date, uses: data.uses ?? 0, users: data.users ?? 0, picks: data.picks ?? 0 }
+  })
+}

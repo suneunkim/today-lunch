@@ -1,3 +1,6 @@
+'use client'
+
+import { useMemo } from 'react'
 import { 해장제외전체 } from '@/app/data/food'
 import WeatherBanner from '@/components/features/weather/WeatherBanner'
 import WeatherCardWrap from '@/components/features/weather/WeatherCardWrap'
@@ -20,19 +23,24 @@ const WeatherContent = ({ weatherData }: Props) => {
   const temperature = weatherData?.temperature ?? 20 // 기온 값 (기본값 20)
   const tempCondition = getTemperatureCondition(temperature)
 
-  // 날씨에 맞는 메뉴 필터링 - rain, snow 외에는 clear(맑음) 처리
-  const weatherFilteredMenus = getWeatherFilteredMenus(해장제외전체, apiWeather)
-
-  // 기온에 맞는 메뉴 필터링
-  const tempFilterdMenus = getTemperatureFilteredMenus(
-    해장제외전체,
-    tempCondition,
-    weatherFilteredMenus
-  )
+  // 화면이 다시 그려질 때마다 메뉴가 바뀌지 않도록 한 번만 뽑습니다.
+  const { weatherFilteredMenus, tempFilterdMenus } = useMemo(() => {
+    const weatherFilteredMenus = getWeatherFilteredMenus(해장제외전체, apiWeather)
+    const tempFilterdMenus = getTemperatureFilteredMenus(
+      해장제외전체,
+      tempCondition,
+      weatherFilteredMenus
+    )
+    return { weatherFilteredMenus, tempFilterdMenus }
+  }, [apiWeather, tempCondition])
 
   // 날씨 API의 weather 값에 따라 지정한 Title 사용
   const weatherConditionTitle =
-    apiWeather === 'rain' ? 'rain' : apiWeather === 'snow' ? 'snow' : 'clear'
+    apiWeather === 'rain' || apiWeather === 'drizzle' || apiWeather === 'thunderstorm'
+      ? 'rain'
+      : apiWeather === 'snow'
+      ? 'snow'
+      : 'clear'
 
   return (
     <div className='flex flex-col gap-8'>

@@ -1,0 +1,25 @@
+// Firebase 콘솔 → Firestore Database → 규칙 에 그대로 붙여 넣으세요.
+// 로그인 없는 앱이라 누구나 "숫자 올리기"만 할 수 있게 열어 둡니다.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 누적 이용 수 / 일자별 집계 / 메뉴별 결재 수: 읽기 + 숫자 필드 쓰기
+    match /serviceClick/{doc} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['useCount', 'installs']);
+    }
+    match /dailyStats/{day} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['uses', 'users', 'picks']);
+    }
+    match /menuCounts/{menu} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['count']);
+    }
+    // 코멘트 게시판은 앱에서 뺐습니다. 기존 글은 보관만 하고 새 글은 막습니다.
+    match /comments/{comment} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

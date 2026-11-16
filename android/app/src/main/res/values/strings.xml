@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">먹대리</string>
+    <string name="title_activity_main">먹대리</string>
+    <string name="package_name">com.mukdaeri.todaylunch</string>
+    <string name="custom_url_scheme">com.mukdaeri.todaylunch</string>
+</resources>

@@ -1,15 +1,8 @@
-import Button from '@/components/elements/Button'
 import Background from '@/components/features/start/Background'
 import Footer from '@/components/Footer'
-import ServiceClickCount from '@/components/features/start/ServiceClickCount'
-import { getClickCount } from '@/lib/firebase/clickCount'
-import Link from 'next/link'
+import { StartButton, StartCount } from '@/components/features/start/StartActions'
 
-export const revalidate = 600 // 10분마다 데이터 다시 페치
-
-export default async function Start() {
-  const currentClickCount = await getClickCount()
-
+export default function Start() {
   return (
     <div className='min-w-[360px] max-w-[480px] mx-auto bg-customs-gray-95'>
       <Background>
@@ -19,18 +12,10 @@ export default async function Start() {
               오늘{'\n'}점심은{'\n'}먹대리가
             </h1>
             <h2 className='text-heading1'>점심메뉴 고르기</h2>
-            <Link href='/home' className='z-10'>
-              <Button
-                type='primary'
-                className='max-w-[155px] font-paperlogy mt-[28px] z-10'
-                aria-label='점심 메뉴 추천 시작하기'
-              >
-                GO START
-              </Button>
-            </Link>
+            <StartButton />
           </div>
           <div>
-            <ServiceClickCount count={currentClickCount} />
+            <StartCount />
           </div>
         </section>
       </Background>
@@ -44,7 +29,7 @@ export default async function Start() {
       <article className='flex flex-col items-center mt-[43px] pb-[179px] '>
         <img
           className='w-[282px] h-[448px] object-contain'
-          src='mukdaeri-backview.png'
+          src='/mukdaeri-backview.png'
           alt='먹대리의 일하는 뒷모습'
         />
       </article>

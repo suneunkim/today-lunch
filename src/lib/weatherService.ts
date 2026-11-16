@@ -1,4 +1,4 @@
-// 주요 도시 정의
+// 날씨는 Open-Meteo(키 없이 쓰는 무료 API)에서 기기가 직접 받아옵니다.
 const MAJOR_CITIES = {
   SEOUL: { name: 'Seoul', nameKR: '서울특별시', lat: 37.5665, lon: 126.978 },
   BUSAN: { name: 'Busan', nameKR: '부산광역시', lat: 35.1796, lon: 129.0756 },
@@ -9,9 +9,11 @@ const MAJOR_CITIES = {
   ULSAN: { name: 'Ulsan', nameKR: '울산광역시', lat: 35.5372, lon: 129.3167 },
   CHUNCHEON: { name: 'Chuncheon', nameKR: '춘천시', lat: 37.8747, lon: 127.7342 },
   JEONJU: { name: 'Jeonju', nameKR: '전주시', lat: 35.8247, lon: 127.148 },
-  MASAN: { name: 'Masan', nameKR: '마산시', lat: 35.1443, lon: 128.5718 },
-  JEJU: { name: 'Jeju', nameKR: '제주특별시', lat: 33.4996, lon: 126.5312 },
+  MASAN: { name: 'Masan', nameKR: '창원시 마산', lat: 35.1443, lon: 128.5718 },
+  JEJU: { name: 'Jeju', nameKR: '제주시', lat: 33.4996, lon: 126.5312 },
 }
+
+export type WeatherData = { location: string; temperature: number; weather: string }
 
 // 위도 경도로 가장 가까운 도시 찾기
 export const findNearestCity = (lat: number, lon: number) => {
@@ -29,37 +31,38 @@ export const findNearestCity = (lat: number, lon: number) => {
   return nearestCity.name
 }
 
-// 도시 이름을 기준으로 날씨 데이터 가져오기
-export const getWeatherByCity = async (cityName: string = 'Seoul') => {
-  const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY
+// WMO 날씨 코드 → 기존 화면에서 쓰던 날씨 이름
+const weatherFromCode = (code: number) => {
+  if (code <= 1) return 'Clear'
+  if (code <= 48) return 'Clouds'
+  if (code <= 57) return 'Drizzle'
+  if (code <= 67) return 'Rain'
+  if (code <= 77) return 'Snow'
+  if (code <= 82) return 'Rain'
+  if (code <= 86) return 'Snow'
+  return 'Thunderstorm'
+}
+
+export const getWeatherByCity = async (cityName: string = 'Seoul'): Promise<WeatherData | null> => {
+  const city =
+    Object.values(MAJOR_CITIES).find((c) => c.name === cityName) ?? MAJOR_CITIES.SEOUL
 
   try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 6000)
     const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric&lang=kr`,
-      {
-        next: { revalidate: 7200 },
-      }
+      `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`,
+      { signal: controller.signal }
     )
-
+    clearTimeout(timer)
     const data = await res.json()
+    if (!data?.current) throw new Error('날씨 응답 형식 오류')
 
-    if (data.cod !== 200) {
-      throw new Error(`OpenWeather API Error: ${data.message}`)
+    return {
+      location: city.nameKR,
+      temperature: Math.round(data.current.temperature_2m),
+      weather: weatherFromCode(data.current.weather_code),
     }
-
-    // MAJOR_CITIES에서 한글 이름 찾기
-    const city = Object.values(MAJOR_CITIES).find((city) => city.name === cityName)
-
-    // 도시 이름이 있으면 한글 이름 사용, 없으면 영어 이름 사용
-    const locationKR = city ? city.nameKR : data.name
-
-    const weatherData = {
-      location: locationKR,
-      temperature: Math.round(data.main.temp),
-      weather: data.weather?.[0].main,
-    }
-
-    return weatherData
   } catch (error) {
     console.error('Weather data fetch error:', error)
     return null

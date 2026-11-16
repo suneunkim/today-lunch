@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import GoogleAnalytics from '@/lib/GoogleAnalytics'
@@ -33,6 +33,16 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#ffffff',
+}
+
+// 앱 안에서는 항상 첫 화면(/) 파일로 시작해야 합니다. 앱이 다른 주소에서 새로고침되면 첫 화면으로 돌려보냅니다.
+const nativeStartScript = `(function(){try{var c=window.Capacitor;if(c&&c.isNativePlatform&&c.isNativePlatform()&&location.pathname!=='/'){location.replace('/')}}catch(e){}})()`
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +51,7 @@ export default function RootLayout({
   return (
     <html lang='ko'>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: nativeStartScript }} />
         <meta
           name='google-site-verification'
           content='eGoFpm0RXg_ZhmKvK6SRvtf5psffCcvn5G68aD8S5e0'

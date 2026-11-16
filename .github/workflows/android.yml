@@ -1,0 +1,69 @@
+name: Android 앱 빌드
+
+# 코드를 올릴 때마다 설치 파일(APK)을 만들어 Actions 화면의 Artifacts에 올려 둡니다.
+# 수동 실행(Run workflow)에서 "출시용"을 켜면 Play 스토어에 올릴 AAB도 함께 만듭니다.
+on:
+  push:
+    branches: [main, app/android-release]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: '출시용 AAB도 만들기 (서명 키 Secrets 필요)'
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+
+      - name: 웹 화면 빌드
+        run: npm run build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+
+      - name: 앱에 화면 넣기
+        run: npx cap sync android
+
+      - name: 테스트용 APK 만들기
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mukdaeri-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: 출시용 AAB 만들기
+        if: ${{ inputs.release }}
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          APP_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          ./gradlew bundleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.release }}
+        with:
+          name: mukdaeri-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab

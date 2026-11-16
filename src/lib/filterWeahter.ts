@@ -1,4 +1,3 @@
-import { 전체, 한식, 국물, 해장, 양식, 중식, 일식, 간편식, 기타 } from '@/app/data/food'
 import { MenuType } from '@/types/types'
 
 export const getTemperatureCondition = (temperature: number) => {
@@ -11,55 +10,25 @@ export const getTemperatureCondition = (temperature: number) => {
   }
 }
 
-const categoryMenuMap = {
-  전체: 전체,
-  한식: 한식,
-  국물: 국물,
-  해장: 해장,
-  양식: 양식,
-  중식: 중식,
-  일식: 일식,
-  간편식: 간편식,
-  기타: 기타,
-} as const
-
-export type CategoryType = keyof typeof categoryMenuMap
-
-export const getRandomItemsList = (categories: CategoryType[], count: number) => {
-  // 카테고리에 해당하는 메뉴들 병합
-  const combinedMenuList = categories.flatMap(
-    (category) => categoryMenuMap[category] || [] // categoryMenuMap 타입을 정확히 추론
-  )
-
-  // 중복 제거
-  const uniqueMenuList = Array.from(new Set(combinedMenuList))
-
-  // 랜덤하게 섞기 및 선택
-  const shuffled = uniqueMenuList.sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, count)
-}
-
 export const getRandomItems = (menuList: MenuType[], count: number) => {
-  const shuffled = menuList.sort(() => 0.5 - Math.random()) // 배열 섞기
+  const shuffled = [...menuList].sort(() => 0.5 - Math.random())
   return shuffled.slice(0, count)
 }
 
 // 날씨로 메뉴 필터링
 export const getWeatherFilteredMenus = (menuList: MenuType[], apiWeather: string) => {
-  const normalizedApiWeather = apiWeather?.toLowerCase()
+  const weather = apiWeather?.toLowerCase()
+  // 이슬비·천둥번개는 비 오는 날 메뉴로 묶습니다.
+  const normalized = weather === 'drizzle' || weather === 'thunderstorm' ? 'rain' : weather
 
   const filteredMenus = menuList.filter((menu) => {
-    // apiWeather가 'rain' 또는 'snow' 이면 menu의 'weather와' 일치하는 음식 사용
-    if (normalizedApiWeather === 'snow' || normalizedApiWeather === 'rain') {
-      return menu.weather === normalizedApiWeather
+    if (normalized === 'snow' || normalized === 'rain') {
+      return menu.weather === normalized
     }
-    // 그 외 날씨라면 menu의 'weather가' 없는 음식 필터링
     return !menu.weather
   })
 
-  const randomMenus = getRandomItems(filteredMenus, 4)
-
-  return randomMenus
+  return getRandomItems(filteredMenus, 4)
 }
 
 export const getTemperatureFilteredMenus = (
@@ -68,21 +37,17 @@ export const getTemperatureFilteredMenus = (
   weatherFilteredMenus: MenuType[] // 날씨로 필터링되어 랜덤 4개 메뉴
 ) => {
   const filteredMenus = menuList.filter((menu) => {
-    // tempCondition이 cold 또는 hot이라면, menu.temperature가 해당 기온 조건에 맞는지 체크
-
     if (tempCondition === 'cold' || tempCondition === 'hot') {
       return menu.temperature === tempCondition
     }
-    // 그 외의 경우에는 temperature 속성이 없는 메뉴 필터링 (mild로 간주)
+    // 그 외의 경우에는 temperature 속성이 없는 메뉴 (mild로 간주)
     return !menu.temperature
   })
 
   // 중복 방지로 날씨로 필터링 된 메뉴 제외
-  const fianlMenus = filteredMenus.filter((menu) => {
-    return !weatherFilteredMenus.some((wm) => wm.name === menu.name)
-  })
+  const finalMenus = filteredMenus.filter(
+    (menu) => !weatherFilteredMenus.some((wm) => wm.name === menu.name)
+  )
 
-  const randomMenus = getRandomItems(fianlMenus, 4)
-
-  return randomMenus
+  return getRandomItems(finalMenus, 4)
 }

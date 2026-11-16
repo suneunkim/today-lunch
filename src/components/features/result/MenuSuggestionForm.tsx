@@ -1,57 +1,68 @@
 'use client'
 
-import { useState } from 'react'
-import { CategoryType, getRandomItemsList } from '@/lib/filterWeahter'
-import { incrementCount } from '@/lib/firebase/approval'
-import WeatherButton from '@/components/elements/WeatherButton'
+import { useEffect, useState } from 'react'
+import { FilterKey, recommend } from '@/lib/recommend'
+import { trackPick, trackUse } from '@/lib/firebase/stats'
+import { addDislike, addHistory, getFavorites } from '@/lib/storage'
+import { MenuType } from '@/types/types'
 import Stamp from '@/components/Stamp'
 import Button from '@/components/elements/Button'
-import HeaderSection from './HeaderSection'
+import DocTitle from '@/components/elements/DocTitle'
+import MapPanel from '@/components/features/map/MapPanel'
+import ShareButton from '@/components/ShareButton'
 import SuggestionItem from './SuggestionItem'
 import Divider from './Divider'
 import Clip from './Clip'
-import KakaoShareButton from '@/components/KakaoShareButton'
-import { incrementServiceUseCount } from '@/lib/firebase/clickCount'
 
-export type initialSuggestionsType = {
-  name: string
-  description: string
-}
 interface Props {
-  initialSuggestions: initialSuggestionsType[]
-  categories: string
+  categories: string[]
+  filters: FilterKey[]
 }
 
-const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
-  const [suggestions, setSuggestions] = useState(initialSuggestions)
-  const [selectedMenu, setSelectedMenu] = useState(initialSuggestions[0].name)
+const MenuSuggestionForm = ({ categories, filters }: Props) => {
+  const [suggestions, setSuggestions] = useState<MenuType[]>([])
+  const [selectedMenu, setSelectedMenu] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [favorites, setFavorites] = useState<Record<string, string>>({})
 
-  const handleSelectMenu = (name: string) => {
-    setSelectedMenu(name)
-  }
-
-  const handleRegenerate = async () => {
-    // 메뉴 재추천
+  const draw = (exclude: string[] = []) => {
+    const next = recommend({ categories, filters, count: 3, exclude })
+    setSuggestions(next)
+    setSelectedMenu(next[0]?.name ?? '')
     setIsSubmitted(false)
-    setSelectedMenu('')
-    const categoryList = categories.split(',') as CategoryType[]
-    const newSuggestions = getRandomItemsList(categoryList, 3)
-    setSuggestions(newSuggestions)
-
-    await incrementServiceUseCount()
   }
 
-  const handleSubmit = async () => {
-    if (isSubmitted) return
-    try {
-      if (selectedMenu === '') return alert('메뉴를 선택해주세요.')
-      setIsSubmitted(true)
-      await incrementCount(selectedMenu)
-    } catch (error) {
-      console.error('Error submitting menu', error)
-    }
+  // 추천은 기기에 저장된 취향·기록을 써야 해서 화면이 뜬 뒤에 뽑습니다.
+  useEffect(() => {
+    draw()
+    setFavorites(getFavorites())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleRegenerate = () => {
+    draw(suggestions.map((menu) => menu.name))
+    trackUse()
   }
+
+  const handleSubmit = () => {
+    if (isSubmitted || !selectedMenu) return
+    setIsSubmitted(true)
+    addHistory(selectedMenu)
+    trackPick(selectedMenu)
+  }
+
+  const handleDislike = () => {
+    if (!selectedMenu) return
+    addDislike(selectedMenu)
+    draw(suggestions.map((menu) => menu.name))
+  }
+
+  if (suggestions.length === 0) return <div className='h-[420px]' />
+
+  const shareBody = suggestions.map((menu, i) => `${i + 1}안. ${menu.name}`).join('\n')
+  const shareMessage = isSubmitted
+    ? `[오늘점심 제안서]\n오늘 점심은 ‘${selectedMenu}’(으)로 결재 완료!\n- 먹대리 드림`
+    : `[오늘점심 제안서]\n${shareBody}\n어떤 안으로 결재하시겠습니까?\n- 먹대리 드림`
 
   return (
     <div className='relative mt-[16px]'>
@@ -62,14 +73,15 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
       <div className='relative'>
         <div className='absolute bg-[#D1C9BD] top-[-8px] right-[-8px] w-full h-full rounded-[20px]' />
         <section className='relative px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px] '>
-          <HeaderSection />
+          <DocTitle>오늘점심 제안서</DocTitle>
           {suggestions.map((menu, i) => (
             <SuggestionItem
-              key={i}
+              key={menu.name}
               menu={menu}
               i={i}
               isSelected={menu.name === selectedMenu}
-              onSelect={handleSelectMenu}
+              onSelect={(name) => !isSubmitted && setSelectedMenu(name)}
+              favorite={favorites[menu.name]}
             />
           ))}
           <Divider />
@@ -77,18 +89,28 @@ const MenuSuggestionForm = ({ initialSuggestions, categories }: Props) => {
       </div>
 
       {/* 버튼 */}
-      <section className='flex flex-col gap-6 mt-6 mb-[20px]'>
+      <section className='flex flex-col gap-4 mt-6 mb-[20px]'>
         <div className='flex gap-[10px]'>
           <Button onClick={handleRegenerate} type='secondary'>
             다시 골라줘
           </Button>
           <Button onClick={handleSubmit} type='primary' disabled={isSubmitted}>
-            이걸로 할게!
+            {isSubmitted ? '결재 완료' : '이걸로 할게!'}
           </Button>
         </div>
-        <KakaoShareButton page='result' categories={categories} />
+        <div className='flex'>
+          <ShareButton
+            label={isSubmitted ? '동료에게 결과 공유하기' : '동료에게 제안서 공유하기'}
+            text={shareMessage}
+          />
+          {!isSubmitted && (
+            <Button type='ghost' onClick={handleDislike}>
+              선택한 메뉴 그만 추천받기
+            </Button>
+          )}
+        </div>
       </section>
-      <WeatherButton iconName='맛집' recommendedMenu={selectedMenu} />
+      <MapPanel menu={selectedMenu} />
     </div>
   )
 }

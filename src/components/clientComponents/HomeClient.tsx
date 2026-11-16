@@ -1,47 +1,31 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import MenuSelection from '../MenuSelection'
 import Button from '../elements/Button'
+import Chip from '../elements/Chip'
 import { useRouter } from 'next/navigation'
 import Loading from '../Loading'
-
-import { app } from '@/firebase'
-import { getAnalytics } from 'firebase/analytics'
-import { logEvent } from 'firebase/analytics'
-import { incrementServiceUseCount } from '@/lib/firebase/clickCount'
+import { trackUse } from '@/lib/firebase/stats'
+import { FilterKey, FILTERS } from '@/lib/recommend'
 
 const HomeClient = () => {
   const router = useRouter()
-  const [analytics, setAnalytics] = useState<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
-  const [analyticsInitialized, setAnalyticsInitialized] = useState(false)
   const [selectedMenu, setSelectedMenu] = useState<string[]>(['전체'])
+  const [filters, setFilters] = useState<FilterKey[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  // firebase로 추가 연동한 구글 분석에 버튼 이벤트 보내보기
-  // getAnalytics() 초기화는 클라이언트에서만 가능
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const analyticsInstance = getAnalytics(app)
-      setAnalytics(analyticsInstance) // 초기화된 analytics를 상태에 저장
-      setAnalyticsInitialized(true)
-    }
-  }, [])
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
+    if (selectedMenu.length === 0) return
     setIsLoading(true)
-    const categoriesString = selectedMenu.join(',')
+    // 집계는 기다리지 않습니다. (서버가 느리거나 꺼져 있어도 결과 화면은 열려야 하므로)
+    trackUse()
 
-    if (analyticsInitialized && analytics) {
-      logEvent(analytics, 'recommend_button_click')
-    }
-
-    // fireStore로 서비스 버튼 클릭 카운트
-    await incrementServiceUseCount()
-
+    const params = new URLSearchParams({ categories: selectedMenu.join(',') })
+    if (filters.length > 0) params.set('f', filters.join(','))
     setTimeout(() => {
-      router.push(`/result?categories=${categoriesString}`)
-    }, 1000)
+      router.push(`/result?${params.toString()}`)
+    }, 900)
   }
 
   const handleClick = useCallback((menu: string) => {
@@ -70,6 +54,15 @@ const HomeClient = () => {
     })
   }, [])
 
+  const toggleFilter = (key: FilterKey) => {
+    setFilters((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key)
+      // 가볍게 ↔ 든든하게 는 둘 중 하나만
+      const opposite = key === 'light' ? 'hearty' : key === 'hearty' ? 'light' : null
+      return [...prev.filter((k) => k !== opposite), key]
+    })
+  }
+
   return (
     <div className='flex flex-col gap-5'>
       {isLoading ? (
@@ -79,7 +72,21 @@ const HomeClient = () => {
       ) : (
         <>
           <MenuSelection selectedMenu={selectedMenu} handleClick={handleClick} />
-          <Button onClick={handleSubmit} type='primary'>
+          <section>
+            <p className='text-label1 text-customs-gray-25 mb-2'>요청 사항 (선택)</p>
+            <div className='flex flex-wrap gap-2'>
+              {FILTERS.map((filter) => (
+                <Chip
+                  key={filter.key}
+                  selected={filters.includes(filter.key)}
+                  onClick={() => toggleFilter(filter.key)}
+                >
+                  {filter.label}
+                </Chip>
+              ))}
+            </div>
+          </section>
+          <Button onClick={handleSubmit} type='primary' disabled={selectedMenu.length === 0}>
             점심메뉴 제안받기
           </Button>
         </>

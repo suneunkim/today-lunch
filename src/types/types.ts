@@ -1,24 +1,8 @@
-export type IconName =
-  | '한식'
-  | '국물'
-  | '해장'
-  | '일식'
-  | '양식'
-  | '중식'
-  | '간편식'
-  | '기타'
-  | '날씨'
-  | '맛집'
-  | '리뷰'
+export type CategoryName = '한식' | '국물' | '해장' | '일식' | '양식' | '중식' | '간편식' | '기타'
 
-export type HeaderTitleType =
-  | '오늘 점심은 먹대리가'
-  | '결과'
-  | '날씨 맞춤 메뉴'
-  | '코멘트'
-  | '프로젝트 팀 소개'
-  | '오픈소스 라이센스'
-  | '의견 보내기'
+export type IconName = CategoryName | '날씨' | '맛집' | '리뷰'
+
+export type HeaderTitleType = string
 
 export type CommentType = {
   id: string
@@ -38,12 +22,24 @@ export type CommentsDataType = {
   // 페이지네이션을 위한 마지막 문서 참조
 }
 
+export type MenuTag =
+  | '매운'
+  | '가벼운'
+  | '든든'
+  | '혼밥'
+  | '가성비'
+  | '해산물'
+  | '내장'
+  | '향신료'
+  | '면'
+
 export type MenuType = {
   name: string
   description: string
+  cats: CategoryName[]
+  tags: MenuTag[]
   weather?: string
   temperature?: string
-  type?: string
   shortDescription?: string
 }
 

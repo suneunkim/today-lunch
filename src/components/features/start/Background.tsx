@@ -6,7 +6,7 @@ const Background = ({ children }: { children: React.ReactNode }) => {
       {children}
 
       <article className='w-[480px] z-10 absolute left-[-60px] tablet:left-0 bottom-0 '>
-        <img src='mukdaeri-id-card.png' alt='먹대리 사원증' />
+        <img src='/mukdaeri-id-card.png' alt='먹대리 사원증' />
       </article>
       {/* 배경 도형 */}
       <svg

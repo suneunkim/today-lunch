@@ -1,6 +1,8 @@
 import Container from '@/components/Container'
 import WeatherButton from '@/components/elements/WeatherButton'
 import HomeClient from '@/components/clientComponents/HomeClient'
+import DeskMenu from '@/components/features/home/DeskMenu'
+import LunchCountdown from '@/components/features/home/LunchCountdown'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -33,15 +35,16 @@ const page = () => {
           <div className='pt-5 pl-5 tablet:pl-20'>
             <p className={styles.speechBubble}>안녕하세요, 점메추1팀 먹대리입니다.</p>
             <p className={`${styles.speechBubble} mt-[6px] relative`}>
-              메뉴 제안드리겠습니다!
+              <LunchCountdown />
               <span className={styles.speechBubbleTail} />
             </p>
           </div>
           <div className='mt-[11px] flex justify-end pr-[14px] tablet:pr-[78px]'>
-            <img className='w-[168px] h-[122px]' src='mukdaeri.png' alt='먹대리 일하는 모습' />
+            <img className='w-[168px] h-[122px]' src='/mukdaeri.png' alt='먹대리 일하는 모습' />
           </div>
         </section>
         <HomeClient />
+        <DeskMenu />
       </div>
     </Container>
   )

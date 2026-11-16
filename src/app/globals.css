@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 앱(안드로이드/iOS)에서 상태바·내비게이션바에 화면이 가리지 않도록 */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #19181b;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes reel {
+  0% { transform: translateY(40%); opacity: 0; }
+  30% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.reel-tick { animation: reel 0.12s ease-out; }
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.pop-in { animation: pop 0.35s ease-out; }
