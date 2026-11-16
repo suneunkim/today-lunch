@@ -86,11 +86,11 @@ const Page = () => {
                 <dd>고민할 시간에 한 숟갈이라도 더 뜨기 위함</dd>
               </dl>
 
-              <div className='mt-5 h-[108px] rounded-[14px] bg-customs-gray-10 flex items-center justify-center overflow-hidden px-3'>
+              <div className='mt-5 h-[108px] rounded-[14px] bg-customs-orange-95-bg flex items-center justify-center overflow-hidden px-3'>
                 <span
                   key={tick}
                   className={`reel-tick font-paperlogy font-bold text-center text-[28px] leading-[120%] ${
-                    result ? 'text-customs-yellow-70' : 'text-customs-gray-100'
+                    result ? 'text-customs-orange-50' : 'text-customs-gray-25'
                   }`}
                 >
                   {display}

@@ -10,10 +10,10 @@ const icon = (d: string) => (
 )
 
 const tabs = [
-  { href: '/home', label: '홈', match: ['/home', '/result', '/weather'], icon: icon('M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z') },
+  { href: '/home', label: '홈', match: ['/home', '/result', '/weather', '/weekly'], icon: icon('M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z') },
   { href: '/slot', label: '전결', match: ['/slot'], icon: icon('M5 5h14v14H5zM9.5 5v14M14.5 5v14M5 12h14') },
-  { href: '/weekly', label: '계획서', match: ['/weekly'], icon: icon('M5 6h14v14H5zM5 10h14M9 3v4M15 3v4') },
   { href: '/office', label: '회의실', match: ['/office'], icon: icon('M4 7h16v11H4zM4 11h16M8 15h3') },
+  { href: '/games', label: '휴게실', match: ['/games', '/worldcup'], icon: icon('M6 9h12a3 3 0 0 1 3 3v3a3 3 0 0 1-5.5 1.6L14.5 15h-5l-1 1.6A3 3 0 0 1 3 15v-3a3 3 0 0 1 3-3zM8 12v2M7 13h2M16 13h.01') },
   { href: '/history', label: '문서함', match: ['/history', '/settings', '/stats'], icon: icon('M4 7l2-3h5l2 3h7v12H4zM9 13h6') },
 ]
 

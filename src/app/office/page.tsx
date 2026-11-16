@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
 import Card from '@/components/elements/Card'
+import Chip from '@/components/elements/Chip'
+import Ladder from '@/components/features/office/Ladder'
 import { getMembers, saveMembers } from '@/lib/storage'
 
 const inputStyle =
@@ -25,6 +27,7 @@ const WhoPays = () => {
   const [winner, setWinner] = useState('')
   const [line, setLine] = useState('')
   const [spinning, setSpinning] = useState(false)
+  const [method, setMethod] = useState<'roulette' | 'ladder'>('roulette')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -95,13 +98,34 @@ const WhoPays = () => {
         </div>
       )}
 
-      <div className='mt-4 h-[96px] rounded-[14px] bg-customs-gray-10 flex flex-col items-center justify-center'>
+      <div className='flex gap-2 mt-4'>
+        <Chip selected={method === 'roulette'} onClick={() => setMethod('roulette')}>
+          룰렛
+        </Chip>
+        <Chip selected={method === 'ladder'} onClick={() => setMethod('ladder')}>
+          사다리 타기
+        </Chip>
+      </div>
+
+      {method === 'ladder' ? (
+        <div className='mt-4'>
+          {members.length < 2 ? (
+            <p className='text-label2 text-customs-gray-50'>두 명 이상 넣으면 사다리가 그려집니다.</p>
+          ) : members.length > 8 ? (
+            <p className='text-label2 text-customs-gray-50'>사다리는 8명까지 가능합니다. 인원을 줄이거나 룰렛을 이용해 주세요.</p>
+          ) : (
+            <Ladder members={members} />
+          )}
+        </div>
+      ) : (
+        <>
+      <div className='mt-4 h-[96px] rounded-[14px] bg-customs-orange-95-bg flex flex-col items-center justify-center'>
         {display ? (
           <>
-            {winner && <span className='text-caption1 text-customs-gray-75'>오늘의 결제자</span>}
+            {winner && <span className='text-caption1 text-customs-gray-50'>오늘의 결제자</span>}
             <span
               className={`font-paperlogy font-bold text-[26px] ${
-                winner ? 'text-customs-yellow-70 pop-in' : 'text-customs-gray-100'
+                winner ? 'text-customs-orange-50 pop-in' : 'text-customs-gray-25'
               }`}
             >
               {display}
@@ -109,7 +133,7 @@ const WhoPays = () => {
             </span>
           </>
         ) : (
-          <span className='text-label2 text-customs-gray-75'>두 명 이상 넣고 뽑아 보세요</span>
+          <span className='text-label2 text-customs-gray-50'>두 명 이상 넣고 뽑아 보세요</span>
         )}
       </div>
       {winner && <p className='text-label2 text-customs-gray-25 mt-3 text-center'>🦝 {line}</p>}
@@ -118,6 +142,8 @@ const WhoPays = () => {
           {winner ? '다시 뽑기' : '결제자 뽑기'}
         </Button>
       </div>
+        </>
+      )}
     </Card>
   )
 }

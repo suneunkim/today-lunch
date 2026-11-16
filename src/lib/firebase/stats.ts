@@ -84,3 +84,20 @@ export const fetchDailyStats = async (days = 14): Promise<DailyStat[]> => {
     return { date, uses: data.uses ?? 0, users: data.users ?? 0, picks: data.picks ?? 0 }
   })
 }
+
+// ── 메뉴 월드컵: 한 판이 끝나면 고른 횟수(득표)와 우승을 한꺼번에 올립니다.
+export const trackWorldcup = (picks: Record<string, number>, winner: string) => {
+  Object.entries(picks).forEach(([name, count]) => {
+    bump(['worldcup', name], name === winner ? { picks: count, wins: 1 } : { picks: count })
+  })
+}
+
+export type WorldcupRank = { name: string; wins: number; picks: number }
+
+export const fetchWorldcupRank = async (count = 10): Promise<WorldcupRank[]> => {
+  if (!firebaseEnabled) return []
+  const q = query(collection(db, 'worldcup'), orderBy('wins', 'desc'), limit(count))
+  const snap = await withTimeout(getDocs(q), null)
+  if (!snap) return []
+  return snap.docs.map((d) => ({ name: d.id, wins: d.data().wins ?? 0, picks: d.data().picks ?? 0 }))
+}

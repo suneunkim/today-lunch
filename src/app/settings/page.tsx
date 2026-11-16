@@ -160,7 +160,7 @@ const Page = () => {
             <span className='text-label2 text-customs-gray-25'>평일 점심 30분 전 알림</span>
             <input
               type='checkbox'
-              className='w-5 h-5 accent-[#fe5f01]'
+              className='w-5 h-5 accent-[#f47a3a]'
               checked={settings.notify}
               onChange={(e) => applyNotify(e.target.checked, settings.lunchHour, settings.lunchMinute)}
             />

@@ -25,7 +25,7 @@ const baseStyles =
 const styles = {
   outlined: 'border-customs-gray-90',
   // 테두리 두께를 바꾸면 옆 칸이 밀리므로, 안쪽 그림자로 두껍게 보이게만 합니다.
-  selected: 'border-customs-orange-50 bg-customs-orange-95-bg shadow-[inset_0_0_0_1px_#fe5f01]',
+  selected: 'border-customs-orange-50 bg-customs-orange-95-bg shadow-[inset_0_0_0_1px_#f47a3a]',
 }
 
 const OutlinedButton = ({ all = false, type, selected, name, onClick }: Props) => {

@@ -2,8 +2,10 @@ import Link from 'next/link'
 
 const items = [
   { href: '/slot', emoji: '🎰', title: '먹대리 전결', desc: '고민 없이 한 방에 결정' },
+  { href: '/worldcup', emoji: '🏆', title: '메뉴 월드컵', desc: '국룰 점심 메뉴 토너먼트' },
   { href: '/weekly', emoji: '🗓️', title: '주간 점심 계획서', desc: '월~금 메뉴 미리 짜기' },
   { href: '/office', emoji: '💳', title: '점심 회의실', desc: '누가 쏠까 · N빵 계산' },
+  { href: '/games', emoji: '🎮', title: '먹대리 휴게실', desc: '운세 · 미니게임' },
   { href: '/history', emoji: '🗂️', title: '결재 문서함', desc: '내가 먹은 점심 기록' },
 ]
 

@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   backgroundColor: '#ffffffff',
   plugins: {
     SystemBars: { insetsHandling: 'native' },
-    LocalNotifications: { iconColor: '#FE5F01' },
+    LocalNotifications: { iconColor: '#f47a3a' },
   },
 }
 

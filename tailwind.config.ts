@@ -38,8 +38,8 @@ const config: Config = {
             '70': '#fbf658',
           },
           orange: {
-            '50': '#fe5f01',
-            '55': '#fe6f1a',
+            '50': '#f47a3a',
+            '55': '#f5874d',
             '95-bg': '#ffefe6',
           },
           gray: {

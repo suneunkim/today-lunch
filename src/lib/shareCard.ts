@@ -27,7 +27,7 @@ const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath()
 }
 
-const ORANGE = '#fe5f01'
+const ORANGE = '#f47a3a'
 const INK = '#19181b'
 
 export const renderDocCard = async ({ title, meta, lines, stamped, showCheckbox }: CardOptions) => {
