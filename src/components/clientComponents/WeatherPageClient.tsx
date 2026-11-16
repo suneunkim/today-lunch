@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import WeatherContent from '@/components/features/weather/WeatherContent'
 import ShareButton from '@/components/ShareButton'
-import { getWeatherByCity, WeatherData } from '@/lib/weatherService'
+import { getWeatherByCity, lastWeatherError, WeatherData } from '@/lib/weatherService'
 
 const WeatherPageClient = () => {
   const city = useSearchParams().get('city') || 'Seoul'
@@ -31,6 +31,9 @@ const WeatherPageClient = () => {
   return (
     <>
       <WeatherContent weatherData={weatherData} />
+      {!weatherData && lastWeatherError && (
+        <p className='text-caption1 text-customs-gray-75 break-all'>원인: {lastWeatherError}</p>
+      )}
       <ShareButton
         label='동료에게 공유하기'
         text={

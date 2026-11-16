@@ -1,3 +1,5 @@
+import { Capacitor, CapacitorHttp } from '@capacitor/core'
+
 // 날씨는 Open-Meteo(키 없이 쓰는 무료 API)에서 기기가 직접 받아옵니다.
 const MAJOR_CITIES = {
   SEOUL: { name: 'Seoul', nameKR: '서울특별시', lat: 37.5665, lon: 126.978 },
@@ -43,28 +45,78 @@ const weatherFromCode = (code: number) => {
   return 'Thunderstorm'
 }
 
+// 마지막 실패 원인 (화면에 작게 보여 줘서 원인을 바로 알 수 있게)
+export let lastWeatherError = ''
+
+// 앱에서는 기기의 네트워크 기능으로 직접 요청합니다. (웹뷰의 접근 제한을 받지 않음)
+const getJson = async (url: string) => {
+  if (Capacitor.isNativePlatform()) {
+    const res = await CapacitorHttp.get({ url, connectTimeout: 7000, readTimeout: 7000 })
+    if (res.status !== 200) throw new Error(`HTTP ${res.status}`)
+    return typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+  }
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 7000)
+  try {
+    const res = await fetch(url, { signal: controller.signal })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return await res.json()
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+type City = { lat: number; lon: number; name: string }
+
+// 1순위 Open-Meteo, 실패하면 2순위 wttr.in (둘 다 키 없이 쓰는 무료 서비스)
+const fromOpenMeteo = async (city: City) => {
+  const data = await getJson(
+    `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code`
+  )
+  if (typeof data?.current?.temperature_2m !== 'number') throw new Error('응답 형식이 다릅니다')
+  return {
+    temperature: Math.round(data.current.temperature_2m),
+    weather: weatherFromCode(Number(data.current.weather_code)),
+  }
+}
+
+const fromWttr = async (city: City) => {
+  const data = await getJson(`https://wttr.in/${city.name}?format=j1`)
+  const now = data?.current_condition?.[0]
+  if (!now) throw new Error('응답 형식이 다릅니다')
+  const text = String(now.weatherDesc?.[0]?.value ?? '').toLowerCase()
+  const weather = /thunder/.test(text)
+    ? 'Thunderstorm'
+    : /snow|sleet|blizzard|ice/.test(text)
+    ? 'Snow'
+    : /drizzle/.test(text)
+    ? 'Drizzle'
+    : /rain|shower/.test(text)
+    ? 'Rain'
+    : /cloud|overcast|mist|fog/.test(text)
+    ? 'Clouds'
+    : 'Clear'
+  return { temperature: Math.round(Number(now.temp_C)), weather }
+}
+
 export const getWeatherByCity = async (cityName: string = 'Seoul'): Promise<WeatherData | null> => {
   const city =
     Object.values(MAJOR_CITIES).find((c) => c.name === cityName) ?? MAJOR_CITIES.SEOUL
 
-  try {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 6000)
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&timezone=Asia%2FSeoul`,
-      { signal: controller.signal }
-    )
-    clearTimeout(timer)
-    const data = await res.json()
-    if (!data?.current) throw new Error('날씨 응답 형식 오류')
-
-    return {
-      location: city.nameKR,
-      temperature: Math.round(data.current.temperature_2m),
-      weather: weatherFromCode(data.current.weather_code),
+  const errors: string[] = []
+  for (const [label, source] of [
+    ['open-meteo', fromOpenMeteo],
+    ['wttr', fromWttr],
+  ] as const) {
+    try {
+      const result = await source(city)
+      lastWeatherError = ''
+      return { location: city.nameKR, ...result }
+    } catch (error) {
+      errors.push(`${label}: ${error instanceof Error ? error.message : String(error)}`)
     }
-  } catch (error) {
-    console.error('Weather data fetch error:', error)
-    return null
   }
+  lastWeatherError = errors.join(' / ')
+  console.error('Weather data fetch error:', lastWeatherError)
+  return null
 }
