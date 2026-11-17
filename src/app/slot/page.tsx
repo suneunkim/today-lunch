@@ -121,7 +121,7 @@ const Page = () => {
                     setDisplay('？？？')
                   }}
                 >
-                  {name}
+                  {name === '전체' ? '아무거나' : name}
                 </Chip>
               </div>
             ))}

@@ -37,7 +37,7 @@ const OutlinedButton = ({ all = false, type, selected, name, onClick }: Props) =
   return (
     <button onClick={onClick} className={classNames}>
       {!all && name && <EmojiIcon name={name} />}
-      {all ? '전체' : name}
+      {all ? '아무거나' : name}
     </button>
   )
 }
