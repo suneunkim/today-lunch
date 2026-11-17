@@ -7,6 +7,8 @@ import Card from '@/components/elements/Card'
 import Ranking from '@/components/elements/Ranking'
 import { fetchTapRank, submitTapScore, TapRank } from '@/lib/firebase/stats'
 import { dateKey, getFlag, setFlag } from '@/lib/storage'
+import ShareButton from '@/components/ShareButton'
+import { renderDocCard } from '@/lib/shareCard'
 
 // 헷갈리기 쉬운 메뉴끼리 묶은 메뉴판. 한 판에 한 묶음(9개)이 통째로 나옵니다.
 const BOARDS = [
@@ -48,7 +50,7 @@ const grade = (ms: number) =>
     ? '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'
     : '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'
 
-// 주문 받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
+// 스피드 주문받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
 const Page = () => {
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
   const [rounds, setRounds] = useState<Round[]>([])
@@ -134,7 +136,7 @@ const Page = () => {
   const round = rounds[index]
 
   return (
-    <Container title='주문 받기'>
+    <Container title='스피드 주문받기'>
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
         <section className='bg-customs-gray-100 rounded-[28px] overflow-hidden'>
           {/* 위쪽 띠: 진행 상황과 시간 */}
@@ -205,14 +207,26 @@ const Page = () => {
                     {best === Math.round(elapsed) ? ' · 내 최고 기록!' : best > 0 ? ` · 최고 ${sec(best)}초` : ''}
                   </p>
                 </div>
-                <div className='mt-3'>
-                  {registered ? (
-                    <p className='text-label2 text-customs-orange-50'>{registered}</p>
-                  ) : (
+                {registered && <p className='text-label2 text-customs-orange-50 mt-3'>{registered}</p>}
+                <div className='flex gap-[10px] mt-3'>
+                  {!registered && (
                     <Button type='sub' onClick={register}>
-                      이 기록 오늘의 랭킹에 넣기
+                      오늘의 랭킹에 넣기
                     </Button>
                   )}
+                  <ShareButton
+                    label='내기 신청하기'
+                    text={`[스피드 주문받기] 주문 ${ROUNDS}건 ${sec(elapsed)}초!\n이 기록 깰 수 있나요? 점심 내기 하실래요? 진 사람이 쏘기!\n- 먹대리 드림`}
+                    image={() =>
+                      renderDocCard({
+                        title: '스피드 주문받기 도전장',
+                        lines: [
+                          { label: `${sec(elapsed)}초`, sub: `주문 ${ROUNDS}건을 받는 데 걸린 시간`, badge: '★', checked: true },
+                          { label: '점심 내기 하실래요?', sub: '이 기록을 못 깨면 점심 쏘기', badge: '?' },
+                        ],
+                      })
+                    }
+                  />
                 </div>
               </div>
             )}
