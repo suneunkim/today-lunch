@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import GameButton from '@/components/elements/GameButton'
 import ShareButton from '@/components/ShareButton'
@@ -13,14 +13,58 @@ const VISIBLE = 10 // 이만큼 쌓이면 화면이 따라 올라갑니다
 
 // 재료가 순서대로 돌아가며 쌓입니다.
 const INGREDIENTS = [
-  { name: '패티', color: '#7A4A2B' },
-  { name: '치즈', color: '#FFC83D' },
-  { name: '양상추', color: '#8BC34A' },
-  { name: '토마토', color: '#E5533D' },
-  { name: '양파', color: '#EADCF0' },
-  { name: '베이컨', color: '#C2553F' },
+  { name: '패티', color: 'patty' },
+  { name: '치즈', color: 'cheese' },
+  { name: '양상추', color: 'lettuce' },
+  { name: '토마토', color: 'tomato' },
+  { name: '양파', color: 'onion' },
+  { name: '베이컨', color: 'bacon' },
 ]
-const BUN = '#E8B36A'
+const BUN = 'bun'
+
+// 재료별 모양. 높이는 한 칸(LAYER_H - 3)에 맞춥니다.
+const sliceStyle = (kind: string): React.CSSProperties => {
+  switch (kind) {
+    case 'bun': // 아래 빵
+      return { background: 'linear-gradient(#EDBE78, #DFA75A)', borderRadius: '6px 6px 16px 16px', boxShadow: 'inset 0 -5px 0 rgba(0,0,0,0.1)' }
+    case 'patty': // 그릴 자국이 있는 두툼한 패티
+      return {
+        background: 'repeating-linear-gradient(115deg, #7A4A2B 0 9px, #5E3620 9px 12px)',
+        borderRadius: 11,
+        boxShadow: 'inset 0 -5px 0 rgba(0,0,0,0.22), inset 0 3px 0 rgba(255,255,255,0.12)',
+      }
+    case 'cheese': // 얇게 덮이고 양 끝이 녹아내린 치즈
+      return {
+        background: 'linear-gradient(#FFD45C, #FFC02E)',
+        clipPath: 'polygon(0 0, 100% 0, 100% 48%, 94% 48%, 88% 100%, 82% 48%, 62% 48%, 57% 80%, 52% 48%, 20% 48%, 13% 100%, 6% 48%, 0 48%)',
+      }
+    case 'lettuce': // 아래가 물결치는 양상추
+      return {
+        background:
+          'radial-gradient(circle at 8px 0, #8BC34A 8px, transparent 8.5px) 0 11px / 16px 12px repeat-x, linear-gradient(#A5D667, #8BC34A) 0 0 / 100% 12px no-repeat',
+        borderRadius: '8px 8px 0 0',
+      }
+    case 'tomato': // 씨가 보이는 토마토 슬라이스
+      return {
+        background: 'radial-gradient(circle, #FFD9A8 1.6px, transparent 2px) 6px 4px / 22px 15px repeat-x, #F06A52',
+        border: '3px solid #D0432F',
+        borderRadius: 10,
+      }
+    case 'onion': // 겹이 보이는 양파 링
+      return {
+        background: '#F7EEFA',
+        border: '2px solid #C9A6DA',
+        borderRadius: 12,
+        boxShadow: 'inset 0 0 0 3px #F7EEFA, inset 0 0 0 5px #DCC3E8',
+      }
+    default: // 줄무늬 베이컨
+      return {
+        background: 'repeating-linear-gradient(180deg, #B8472F 0 5px, #F3B9A2 5px 8px)',
+        borderRadius: '9px 4px 9px 4px',
+        boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.12)',
+      }
+  }
+}
 const TIME_LIMIT = 60 // 초. 시간이 다 되면 그때까지 쌓은 단수로 끝납니다.
 
 // 얼마나 반듯하게 올렸는지에 따른 판정
@@ -45,6 +89,7 @@ const Page = () => {
   const [perfect, setPerfect] = useState(0)
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [timeUp, setTimeUp] = useState(false)
+  const [showResult, setShowResult] = useState(false) // 윗빵이 덮인 뒤에 결과를 보여 줍니다
   const [judge, setJudge] = useState<{ key: JudgeKey; id: number } | null>(null)
   const startedAt = useRef(0)
   const next_id = useRef(0)
@@ -68,6 +113,7 @@ const Page = () => {
     cancelAnimationFrame(raf.current)
     setTimeUp(byTime)
     setPhase('done')
+    setTimeout(() => setShowResult(true), 1100)
     const n = layersRef.current.length - 1
     if (n > (Number(getFlag('stackBest')) || 0)) {
       setFlag('stackBest', String(n))
@@ -106,6 +152,7 @@ const Page = () => {
     setLayers(base)
     setPerfect(0)
     setJudge(null)
+    setShowResult(false)
     setTimeUp(false)
     setTimeLeft(TIME_LIMIT)
     startedAt.current = performance.now()
@@ -182,34 +229,49 @@ const Page = () => {
                 {layers.map((layer, i) => (
                   <div
                     key={i}
-                    className='absolute rounded-[7px]'
+                    className='absolute'
                     style={{
                       left: layer.x,
                       width: layer.w,
                       height: LAYER_H - 3,
                       bottom: 16 + i * LAYER_H,
-                      background: layer.color,
-                      borderRadius: i === 0 ? '7px 7px 14px 14px' : undefined,
-                      boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.12)',
+                      ...sliceStyle(layer.color),
                     }}
                   />
                 ))}
+                {/* 접시 */}
+                <div className='absolute left-[30px] right-[30px] h-[10px] rounded-[50%] bg-[#E9DCC6]' style={{ bottom: 8 }} />
+                {/* 끝나면 윗빵을 덮어 버거를 완성합니다 */}
+                {phase === 'done' && topLayer && (
+                  <div
+                    className='bun-drop absolute'
+                    style={{
+                      left: topLayer.x - 6,
+                      width: topLayer.w + 12,
+                      height: 34,
+                      bottom: 16 + layers.length * LAYER_H,
+                      borderRadius: '50% 50% 8px 8px / 100% 100% 8px 8px',
+                      background:
+                        'radial-gradient(ellipse, #FFF3D6 1.6px, transparent 2.2px) 4px 5px / 20px 12px, linear-gradient(#F0C27C, #DFA75A)',
+                      boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.1)',
+                    }}
+                  />
+                )}
                 {phase === 'playing' && topLayer && (
                   <div
-                    className='absolute rounded-[7px]'
+                    className='absolute'
                     style={{
                       left: movingX,
                       width: topLayer.w,
                       height: LAYER_H - 3,
                       bottom: 16 + layers.length * LAYER_H + 18,
-                      background: movingColor.color,
-                      boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.12)',
+                      ...sliceStyle(movingColor.color),
                     }}
                   />
                 )}
               </div>
 
-              {phase !== 'playing' && (
+              {(phase === 'idle' || (phase === 'done' && showResult)) && (
                 <div className='absolute inset-0 bg-customs-gray-100 bg-opacity-90 flex flex-col items-center justify-center text-center px-6'>
                   {phase === 'idle' ? (
                     <>

@@ -236,3 +236,12 @@ body {
   100% { transform: translateY(-10px); opacity: 0; }
 }
 .judge-pop { animation: judge-pop 0.8s ease-out forwards; }
+
+/* 버거 쌓기: 윗빵이 떨어져 덮이는 동작 */
+@keyframes bun-drop {
+  0% { transform: translateY(-140px); opacity: 0; }
+  60% { transform: translateY(0); opacity: 1; }
+  75% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+.bun-drop { animation: bun-drop 0.6s ease-out both; }
