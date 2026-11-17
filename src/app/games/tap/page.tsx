@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
 import Card from '@/components/elements/Card'
+import Chip from '@/components/elements/Chip'
 import Ranking from '@/components/elements/Ranking'
 import { fetchTapRank, submitTapScore, TapRank } from '@/lib/firebase/stats'
 import { dateKey, getFlag, setFlag } from '@/lib/storage'
@@ -33,12 +34,22 @@ const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
 const shuffle = <T,>(list: T[]) => [...list].sort(() => Math.random() - 0.5)
 const makeNickname = () => `${pick(ADJ)} ${pick(NOUN)} ${1000 + Math.floor(Math.random() * 9000)}`
 
-type Round = { order: string; board: string[]; table: number }
+// 챌린저 모드: 칸마다 색이 깔리고, 주문서에는 엉뚱한 칸의 색이 칠해져 더 헷갈립니다.
+const TILE_COLORS = ['#FFD98A', '#A9DBFF', '#C4EBA4', '#FBB8D6', '#D3C6FB', '#FFC19A']
+
+type Round = { order: string; board: string[]; table: number; colors: string[]; lure: string }
 // 10판: 메뉴판 묶음 순서를 섞고, 판마다 주문 메뉴 하나와 자리 배치를 새로 정합니다.
 const makeRounds = (): Round[] =>
   shuffle(BOARDS)
     .slice(0, ROUNDS)
-    .map((board) => ({ order: pick(board), board: shuffle(board), table: 1 + Math.floor(Math.random() * 12) }))
+    .map((names) => {
+      const board = shuffle(names)
+      const order = pick(board)
+      const colors = board.map(() => pick(TILE_COLORS))
+      // 주문서 색은 정답이 아닌 칸의 색에서 고릅니다 (색만 보고 누르면 틀리도록)
+      const others = colors.filter((c) => c !== colors[board.indexOf(order)])
+      return { order, board, table: 1 + Math.floor(Math.random() * 12), colors, lure: pick(others.length ? others : colors) }
+    })
 
 const sec = (ms: number) => (ms / 1000).toFixed(2)
 const grade = (ms: number) =>
@@ -52,6 +63,7 @@ const grade = (ms: number) =>
 
 // 스피드 주문받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
 const Page = () => {
+  const [hard, setHard] = useState(false)
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
   const [rounds, setRounds] = useState<Round[]>([])
   const [index, setIndex] = useState(0)
@@ -69,13 +81,22 @@ const Page = () => {
   const today = dateKey()
   const triesLeft = MAX_TRIES - tries
 
+  const key = hard ? 'Hard' : ''
+  const board = hard ? 'hard' : 'scores'
+
+  // 모드를 바꾸면 그 모드의 랭킹, 오늘 남은 횟수, 최고 기록을 불러옵니다.
   useEffect(() => {
-    fetchTapRank(10).then(setRank)
-    setTries(Number(getFlag(`orderTries:${today}`)) || 0)
-    setBest(Number(getFlag('orderBest')) || 0)
+    cancelAnimationFrame(frame.current)
+    setPhase('idle')
+    setElapsed(0)
+    setRegistered('')
+    setRank(null)
+    fetchTapRank(10, hard ? 'hard' : 'scores').then(setRank)
+    setTries(Number(getFlag(`orderTries${hard ? 'Hard' : ''}:${today}`)) || 0)
+    setBest(Number(getFlag(`orderBest${hard ? 'Hard' : ''}`)) || 0)
     setNickname(getFlag('tapNickname'))
     return () => cancelAnimationFrame(frame.current)
-  }, [today])
+  }, [today, hard])
 
   const start = () => {
     if (triesLeft <= 0) return
@@ -86,7 +107,7 @@ const Page = () => {
     setElapsed(0)
     penalty.current = 0
     setTries(tries + 1)
-    setFlag(`orderTries:${today}`, String(tries + 1))
+    setFlag(`orderTries${key}:${today}`, String(tries + 1))
     setPhase('playing')
     startedAt.current = performance.now()
     const tick = () => {
@@ -115,7 +136,7 @@ const Page = () => {
     setPhase('done')
     if (!best || ms < best) {
       setBest(ms)
-      setFlag('orderBest', String(ms))
+      setFlag(`orderBest${key}`, String(ms))
     }
   }
 
@@ -128,9 +149,9 @@ const Page = () => {
     }
     setNickname(name)
     setRegistered('등록 중…')
-    const ok = await submitTapScore(name, Math.round(elapsed))
+    const ok = await submitTapScore(name, Math.round(elapsed), board)
     setRegistered(ok ? `‘${name}’(으)로 등록했습니다.` : '등록하지 못했습니다. 잠시 후 다시 시도해 주세요.')
-    if (ok) fetchTapRank(10).then(setRank)
+    if (ok) fetchTapRank(10, board).then(setRank)
   }
 
   const round = rounds[index]
@@ -138,6 +159,15 @@ const Page = () => {
   return (
     <Container title='스피드 주문받기'>
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
+        <div className='flex gap-2'>
+          <Chip selected={!hard} onClick={() => phase !== 'playing' && setHard(false)}>
+            기본
+          </Chip>
+          <Chip selected={hard} onClick={() => phase !== 'playing' && setHard(true)}>
+            챌린저 (색깔 방해)
+          </Chip>
+        </div>
+
         <section className='bg-customs-gray-100 rounded-[28px] overflow-hidden'>
           {/* 위쪽 띠: 진행 상황과 시간 */}
           <div className='bg-customs-gray-10 px-5 py-4 flex items-center justify-between rounded-b-[28px]'>
@@ -158,6 +188,12 @@ const Page = () => {
                   주문이 들어오면 메뉴판에서 같은 메뉴를 최대한 빨리 누르세요.
                   <br />
                   총 {ROUNDS}건, 잘못 누르면 1초가 더해집니다.
+                  {hard && (
+                    <>
+                      <br />
+                      <b className='text-customs-gray-10'>챌린저: 칸마다 색이 깔립니다. 색에 속지 말고 글자를 보세요.</b>
+                    </>
+                  )}
                   {best > 0 && (
                     <>
                       <br />내 최고 기록 <b className='text-customs-orange-50'>{sec(best)}초</b>
@@ -170,16 +206,23 @@ const Page = () => {
             {phase === 'playing' && round && (
               <>
                 {/* 주문서 */}
-                <div key={index} className='reel-tick rounded-[18px] bg-customs-orange-95-bg px-4 py-4 text-center'>
-                  <p className='text-caption1 text-customs-gray-50'>{round.table}번 테이블 주문이요!</p>
-                  <h2 className='font-paperlogy font-bold text-[28px] leading-[125%] text-customs-orange-50 mt-1'>{round.order}</h2>
+                <div
+                  key={index}
+                  className='reel-tick rounded-[18px] bg-customs-orange-95-bg px-4 py-4 text-center'
+                  style={hard ? { background: round.lure } : undefined}
+                >
+                  <p className={`text-caption1 ${hard ? 'text-customs-gray-25' : 'text-customs-gray-50'}`}>{round.table}번 테이블 주문이요!</p>
+                  <h2 className={`font-paperlogy font-bold text-[28px] leading-[125%] mt-1 ${hard ? 'text-customs-gray-10' : 'text-customs-orange-50'}`}>
+                    {round.order}
+                  </h2>
                 </div>
                 {/* 메뉴판: 판마다 메뉴와 자리가 바뀝니다 */}
                 <div className='grid grid-cols-3 gap-x-2 gap-y-[14px] mt-5'>
-                  {round.board.map((name) => (
+                  {round.board.map((name, i) => (
                     <button
                       key={name}
                       onPointerDown={() => tap(name)}
+                      style={hard && wrong !== name ? { background: round.colors[i] } : undefined}
                       className={`h-[68px] px-1 rounded-[16px] font-paperlogy font-bold text-[15px] leading-[125%] break-keep select-none touch-manipulation transition-transform duration-75 ${
                         wrong === name
                           ? 'bg-customs-gray-25 text-customs-gray-100 shadow-[0_2px_0_#19181b] translate-y-[4px]'
@@ -216,10 +259,10 @@ const Page = () => {
                   )}
                   <ShareButton
                     label='내기 신청하기'
-                    text={`[스피드 주문받기] 주문 ${ROUNDS}건 ${sec(elapsed)}초!\n이 기록 깰 수 있나요? 점심 내기 하실래요? 진 사람이 쏘기!\n- 먹대리 드림`}
+                    text={`[스피드 주문받기${hard ? ' 챌린저' : ''}] 주문 ${ROUNDS}건 ${sec(elapsed)}초!\n이 기록 깰 수 있나요? 점심 내기 하실래요? 진 사람이 쏘기!\n- 먹대리 드림`}
                     image={() =>
                       renderDocCard({
-                        title: '스피드 주문받기 도전장',
+                        title: hard ? '주문받기 챌린저 도전장' : '스피드 주문받기 도전장',
                         lines: [
                           { label: `${sec(elapsed)}초`, sub: `주문 ${ROUNDS}건을 받는 데 걸린 시간`, badge: '★', checked: true },
                           { label: '점심 내기 하실래요?', sub: '이 기록을 못 깨면 점심 쏘기', badge: '?' },
@@ -249,7 +292,7 @@ const Page = () => {
           </div>
         </section>
 
-        <Card title='오늘의 랭킹 TOP 10'>
+        <Card title={hard ? '오늘의 챌린저 랭킹 TOP 10' : '오늘의 랭킹 TOP 10'}>
           <p className='text-caption1 text-customs-gray-50 -mt-2 mb-4'>주문 {ROUNDS}건을 가장 빨리 받은 순서 · 매일 새로 시작합니다.</p>
           {!rank ? (
             <p className='text-label2 text-customs-gray-50'>랭킹을 불러오는 중입니다…</p>

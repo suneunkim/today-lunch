@@ -106,17 +106,18 @@ export const fetchWorldcupRank = async (count = 10): Promise<WorldcupRank[]> => 
 // ── 주문 받기 게임: 오늘의 랭킹 (날짜별로 따로 쌓입니다)
 export type TapRank = { name: string; ms: number }
 
-export const submitTapScore = async (name: string, ms: number) => {
+// board: 'scores' = 기본, 'hard' = 챌린저 (랭킹을 따로 둡니다)
+export const submitTapScore = async (name: string, ms: number, board: 'scores' | 'hard' = 'scores') => {
   if (!firebaseEnabled) return false
   return withTimeout(
-    addDoc(collection(db, 'tapRank', dateKey(), 'scores'), { name, ms }).then(() => true),
+    addDoc(collection(db, 'tapRank', dateKey(), board), { name, ms }).then(() => true),
     false
   )
 }
 
-export const fetchTapRank = async (count = 10): Promise<TapRank[]> => {
+export const fetchTapRank = async (count = 10, board: 'scores' | 'hard' = 'scores'): Promise<TapRank[]> => {
   if (!firebaseEnabled) return []
-  const q = query(collection(db, 'tapRank', dateKey(), 'scores'), orderBy('ms', 'asc'), limit(count))
+  const q = query(collection(db, 'tapRank', dateKey(), board), orderBy('ms', 'asc'), limit(count))
   const snap = await withTimeout(getDocs(q), null)
   if (!snap) return []
   return snap.docs.map((d) => ({ name: d.data().name as string, ms: d.data().ms as number }))
