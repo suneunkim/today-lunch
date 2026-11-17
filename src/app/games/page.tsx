@@ -42,7 +42,7 @@ const Page = () => {
         <section className='rounded-[20px] bg-customs-gray-100 px-5 pt-5 pb-4 flex justify-between items-end'>
           <div>
             <TextBubble bubbleTail={false} color='gray' text='잠깐 쉬었다 하시죠.' />
-            <TextBubble bubbleTail={true} color='gray' text='한 판 하고 가시죠.' />
+            <TextBubble bubbleTail={true} tailSide='right' color='gray' text='한 판 하고 가시죠.' />
           </div>
           <img className='w-[96px] h-[90px] object-contain' src='/comment.png' alt='먹대리' />
         </section>

@@ -227,3 +227,12 @@ body {
   85% { opacity: 1; scale: 1; }
   100% { opacity: 0; scale: 1.02; }
 }
+
+/* 버거 쌓기 판정 글자: 톡 튀어나왔다가 사라짐 */
+@keyframes judge-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  20% { transform: scale(1.15); opacity: 1; }
+  40% { transform: scale(1); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+.judge-pop { animation: judge-pop 0.8s ease-out forwards; }
