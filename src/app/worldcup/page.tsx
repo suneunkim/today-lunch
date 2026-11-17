@@ -12,7 +12,8 @@ import { findMenu } from '@/app/data/food'
 import { WORLDCUP_MODES } from '@/app/data/worldcup'
 import { fetchWorldcupRank, trackPick, trackWorldcup, WorldcupRank } from '@/lib/firebase/stats'
 import { renderDocCard } from '@/lib/shareCard'
-import { addHistory } from '@/lib/storage'
+import { recordMessage, setTodayLunch } from '@/lib/storage'
+import { toast } from '@/lib/toast'
 
 const shuffle = <T,>(list: readonly T[]) => [...list].sort(() => Math.random() - 0.5)
 const roundName = (size: number) => (size === 2 ? '결승' : size === 4 ? '준결승' : `${size}강`)
@@ -101,8 +102,9 @@ const Page = () => {
   const approve = () => {
     if (approved) return
     setApproved(true)
-    addHistory(champion)
-    trackPick(champion)
+    const record = setTodayLunch(champion)
+    toast(recordMessage(champion, record))
+    if (record.changed) trackPick(champion)
   }
 
   const reset = () => {
@@ -205,7 +207,7 @@ const Page = () => {
                   다시 하기
                 </Button>
                 <Button type='primary' onClick={approve} disabled={approved}>
-                  {approved ? '결재 완료' : '이걸로 결재'}
+                  {approved ? '결정 완료' : '오늘 이걸로 먹기'}
                 </Button>
               </div>
               <div className='mt-[10px]'>

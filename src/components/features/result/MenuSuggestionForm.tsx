@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { FilterKey, recommend } from '@/lib/recommend'
 import { trackPick, trackUse } from '@/lib/firebase/stats'
-import { addDislike, addHistory, getFavorites } from '@/lib/storage'
+import { addDislike, getFavorites, recordMessage, setTodayLunch } from '@/lib/storage'
+import { toast } from '@/lib/toast'
 import { MenuType } from '@/types/types'
 import Stamp from '@/components/Stamp'
 import Button from '@/components/elements/Button'
@@ -48,13 +49,15 @@ const MenuSuggestionForm = ({ categories, filters }: Props) => {
   const handleSubmit = () => {
     if (isSubmitted || !selectedMenu) return
     setIsSubmitted(true)
-    addHistory(selectedMenu)
-    trackPick(selectedMenu)
+    const result = setTodayLunch(selectedMenu)
+    toast(recordMessage(selectedMenu, result))
+    if (result.changed) trackPick(selectedMenu)
   }
 
   const handleDislike = () => {
     if (!selectedMenu) return
     addDislike(selectedMenu)
+    toast(`‘${selectedMenu}’은(는) 이제 추천하지 않습니다. (설정에서 되돌릴 수 있어요)`)
     draw(suggestions.map((menu) => menu.name))
   }
 
@@ -101,7 +104,7 @@ const MenuSuggestionForm = ({ categories, filters }: Props) => {
         </div>
         <div className='flex gap-[10px]'>
           <ShareButton
-            label={isSubmitted ? '결과 공유하기' : '제안서 공유하기'}
+            label={isSubmitted ? '📤 결과 공유하기' : '📤 제안서 공유하기'}
             text={shareMessage}
             image={() =>
               renderDocCard({
@@ -117,9 +120,12 @@ const MenuSuggestionForm = ({ categories, filters }: Props) => {
             }
           />
           {!isSubmitted && (
-            <Button type='sub' onClick={handleDislike}>
-              이 메뉴 그만 추천받기
-            </Button>
+            <button
+              onClick={handleDislike}
+              className='w-full py-3 px-2 rounded-[14px] bg-customs-gray-95 border border-customs-gray-90 text-label1 text-customs-gray-25'
+            >
+              🚫 이 메뉴 그만 추천받기
+            </button>
           )}
         </div>
       </section>

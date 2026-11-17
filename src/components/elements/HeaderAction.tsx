@@ -20,7 +20,7 @@ const HeaderAction = ({ name }: Props) => {
 
   if (name === 'left') {
     return (
-      <button onClick={() => router.back()} aria-label='뒤로'>
+      <button onClick={() => (window.history.length > 1 ? router.back() : router.replace('/home'))} aria-label='뒤로'>
         <BasicIcon name='left' />
       </button>
     )

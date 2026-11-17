@@ -27,9 +27,10 @@ const BOARDS = [
 ]
 // 칸 모양: 게임을 시작할 때마다 하나를 무작위로 고릅니다. (모양은 globals.css의 .tile-*)
 const SKINS = ['postit', 'plate', 'ticket', 'keycap', 'number', 'stamp', 'calendar', 'coaster'] as const
-const ROUNDS = 10
+// 주문 수: 기본 10건, 챌린저는 한 주문에 메뉴 2개라 6건(메뉴 12개)
+const roundsOf = (hard: boolean) => (hard ? 6 : 10)
 const PENALTY = 1000 // 잘못 누르면 1초 추가
-const MAX_TRIES = 3
+const MAX_REGISTER = 3 // 랭킹 등록은 하루 3번까지 (게임은 횟수 제한 없음)
 
 const ADJ = ['배고픈', '든든한', '매콤한', '느긋한', '재빠른', '출출한', '야무진', '깔끔한', '용감한', '신중한']
 const NOUN = ['너구리', '국밥', '돈까스', '김밥', '만두', '라면', '떡볶이', '비빔밥', '우동', '탕수육']
@@ -57,9 +58,9 @@ const tileVars = (c: TileColor) =>
 
 type Round = { orders: string[]; board: string[]; table: number; colors: TileColor[]; lure: TileColor }
 // 10판: 메뉴판 묶음 순서를 섞고, 판마다 주문 메뉴 하나와 자리 배치를 새로 정합니다.
-const makeRounds = (): Round[] =>
+const makeRounds = (count: number): Round[] =>
   shuffle(BOARDS)
-    .slice(0, ROUNDS)
+    .slice(0, count)
     .map((names, i) => {
       const board = shuffle(names)
       const colors = board.map(() => pick(TILE_COLORS))
@@ -68,20 +69,29 @@ const makeRounds = (): Round[] =>
     })
 
 const sec = (ms: number) => (ms / 1000).toFixed(2)
-// 등급: 일단 촘촘하게 6단계로 나눠 두고, 쌓인 기록 분포(orderStats)를 보고 기준 시간을 조정합니다.
-// [이 시간(초) 미만이면, 등급 이름, 한마디] — 챌린저는 누르는 횟수가 2배라 기준이 다릅니다.
-const GRADES: [number, number, string, string][] = [
-  // 기본, 챌린저, 이름, 한마디
-  [7, 13, '전설의 홀 매니저', '주문이 들어오기도 전에 누르셨습니다.'],
-  [9, 16, '에이스 알바', '점심 러시도 거뜬합니다. 랭킹을 노려 보세요.'],
-  [11, 20, '능숙한 직원', '손님이 기다릴 틈이 없었습니다.'],
-  [14, 25, '무난한 신입', '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'],
-  [18, 32, '수습 기간', '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'],
-  [Infinity, Infinity, '첫 출근', '괜찮습니다. 누구나 처음엔 메뉴판이 낯섭니다.'],
+// 등급: 6단계. [이 시간(초) 미만, 이름, 한마디]
+// 기준 시간은 직접 해 본 기록(기본 14~15초, 챌린저 10건 37초)을 가운데 등급에 맞춰 잡았고,
+// 쌓이는 기록 분포(이용 현황 화면)를 보고 조정합니다.
+const GRADES_BASIC: [number, string, string][] = [
+  [9, '전설의 홀 매니저', '주문이 들어오기도 전에 누르셨습니다.'],
+  [11, '에이스 알바', '점심 러시도 거뜬합니다. 랭킹을 노려 보세요.'],
+  [13, '능숙한 직원', '손님이 기다릴 틈이 없었습니다.'],
+  [16, '무난한 신입', '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'],
+  [20, '수습 기간', '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'],
+  [Infinity, '첫 출근', '괜찮습니다. 누구나 처음엔 메뉴판이 낯섭니다.'],
+]
+const GRADES_HARD: [number, string, string][] = [
+  [13, '주방의 지배자', '색깔 함정이 전혀 통하지 않았습니다.'],
+  [16, '러시아워 해결사', '두 메뉴를 한 번에 외우는 실력입니다.'],
+  [19, '멀티태스킹 고수', '헷갈릴 만한데 침착하게 받아냈습니다.'],
+  [23, '침착한 서버', '순서만 조금 더 빨리 읽으면 됩니다.'],
+  [28, '진땀 나는 홀', '색에 속지 말고 글자만 보세요.'],
+  [Infinity, '주문 폭주', '챌린저는 원래 어렵습니다. 한 판 더 가시죠.'],
 ]
 const gradeOf = (ms: number, hard: boolean) => {
-  const [, , title, desc] = GRADES.find(([basic, challenger]) => ms / 1000 < (hard ? challenger : basic))!
-  return { title, desc, level: GRADES.findIndex((g) => g[2] === title) + 1 }
+  const list = hard ? GRADES_HARD : GRADES_BASIC
+  const level = list.findIndex(([limit]) => ms / 1000 < limit)
+  return { title: list[level][1], desc: list[level][2], level: level + 1 }
 }
 
 // 스피드 주문받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
@@ -107,7 +117,8 @@ const Page = () => {
   const frame = useRef(0)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const today = dateKey()
-  const triesLeft = MAX_TRIES - tries
+  const ROUNDS = roundsOf(hard)
+  const registerLeft = MAX_REGISTER - tries // tries = 오늘 랭킹에 등록한 횟수
 
   const key = hard ? 'Hard' : ''
   const board = hard ? 'hard' : 'scores'
@@ -121,15 +132,14 @@ const Page = () => {
     setRegistered('')
     setRank(null)
     fetchTapRank(10, hard ? 'hard' : 'scores').then(setRank)
-    setTries(Number(getFlag(`orderTries${hard ? 'Hard' : ''}:${today}`)) || 0)
+    setTries(Number(getFlag(`orderRegs${hard ? 'Hard' : ''}:${today}`)) || 0)
     setBest(Number(getFlag(`orderBest${hard ? 'Hard' : ''}`)) || 0)
     setNickname(getFlag('tapNickname'))
     return () => cancelAnimationFrame(frame.current)
   }, [today, hard])
 
   const start = () => {
-    if (triesLeft <= 0) return
-    setRounds(makeRounds())
+    setRounds(makeRounds(ROUNDS))
     // 직전 판과 다른 모양으로
     setSkin((prev) => pick(SKINS.filter((name) => name !== prev)))
     setIndex(0)
@@ -138,8 +148,6 @@ const Page = () => {
     setRegistered('')
     setElapsed(0)
     penalty.current = 0
-    setTries(tries + 1)
-    setFlag(`orderTries${key}:${today}`, String(tries + 1))
     // 3, 2, 1 카운트다운 뒤에 시계가 돌기 시작합니다.
     setPhase('ready')
     setCount(3)
@@ -203,7 +211,7 @@ const Page = () => {
   }
 
   const register = async () => {
-    if (registered) return
+    if (registered || registerLeft <= 0) return
     let name = getFlag('tapNickname')
     if (!name) {
       name = makeNickname()
@@ -213,7 +221,11 @@ const Page = () => {
     setRegistered('등록 중…')
     const ok = await submitTapScore(name, Math.round(elapsed), board)
     setRegistered(ok ? `‘${name}’(으)로 등록했습니다.` : '등록하지 못했습니다. 잠시 후 다시 시도해 주세요.')
-    if (ok) fetchTapRank(10, board).then(setRank)
+    if (ok) {
+      setTries(tries + 1)
+      setFlag(`orderRegs${key}:${today}`, String(tries + 1))
+      fetchTapRank(10, board).then(setRank)
+    }
   }
 
   const round = rounds[index]
@@ -234,7 +246,7 @@ const Page = () => {
           {/* 위쪽 띠: 진행 상황과 시간 */}
           <div className='bg-customs-gray-10 px-5 py-4 flex items-center justify-between rounded-b-[28px]'>
             <span className='text-label2 text-customs-gray-75'>
-              {phase === 'playing' ? `주문 ${index + 1} / ${ROUNDS}` : `오늘 남은 도전 ${Math.max(0, triesLeft)}번`}
+              {phase === 'playing' ? `주문 ${index + 1} / ${ROUNDS}` : hard ? '챌린저 모드' : '기본 모드'}
             </span>
             <span className='px-4 py-1 rounded-full bg-[#2b292e] font-paperlogy font-bold text-[26px] text-customs-orange-50 tabular-nums'>
               {sec(elapsed)}
@@ -325,15 +337,15 @@ const Page = () => {
                     <span className='text-[22px] text-customs-gray-10'> 초</span>
                   </h2>
                   <p className='text-caption1 text-customs-gray-50 mt-1'>
-                    주문 {ROUNDS}건{hard && ' (메뉴 20개)'} 처리{misses > 0 && ` · 잘못 누름 ${misses}번`}
+                    주문 {ROUNDS}건{hard && ` (메뉴 ${ROUNDS * 2}개)`} 처리{misses > 0 && ` · 잘못 누름 ${misses}번`}
                     {best === Math.round(elapsed) ? ' · 내 최고 기록!' : best > 0 ? ` · 최고 ${sec(best)}초` : ''}
                   </p>
                 </div>
                 {registered && <p className='text-label2 text-customs-orange-50 mt-3'>{registered}</p>}
                 <div className='flex gap-[10px] mt-3'>
-                  {!registered && (
+                  {!registered && registerLeft > 0 && (
                     <Button type='sub' onClick={register}>
-                      오늘의 랭킹에 넣기
+                      랭킹에 넣기 ({registerLeft}번 남음)
                     </Button>
                   )}
                   <ShareButton
@@ -355,16 +367,16 @@ const Page = () => {
 
             {(phase === 'idle' || phase === 'done') && (
               <div className='mt-5 px-1'>
-                <GameButton onClick={start} disabled={triesLeft <= 0}>
-                  {triesLeft <= 0 ? '오늘 영업 종료! 내일 다시 만나요' : phase === 'done' ? `다시 도전 (${triesLeft}번 남음)` : '영업 시작'}
-                </GameButton>
+                <GameButton onClick={start}>{phase === 'done' ? '다시 도전' : '영업 시작'}</GameButton>
               </div>
             )}
           </div>
         </section>
 
         <Card title={hard ? '오늘의 챌린저 랭킹 TOP 10' : '오늘의 랭킹 TOP 10'}>
-          <p className='text-caption1 text-customs-gray-50 -mt-2 mb-4'>주문 {ROUNDS}건을 가장 빨리 받은 순서 · 매일 새로 시작합니다.</p>
+          <p className='text-caption1 text-customs-gray-50 -mt-2 mb-4'>
+            주문 {ROUNDS}건을 가장 빨리 받은 순서 · 매일 새로 시작 · 등록은 하루 {MAX_REGISTER}번
+          </p>
           {!rank ? (
             <p className='text-label2 text-customs-gray-50'>랭킹을 불러오는 중입니다…</p>
           ) : rank.length === 0 ? (

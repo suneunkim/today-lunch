@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import AppShell from '@/components/AppShell'
 import localFont from 'next/font/local'
 import './globals.css'
 import GoogleAnalytics from '@/lib/GoogleAnalytics'
@@ -59,7 +60,8 @@ export default function RootLayout({
       </head>
       <body className={`${pretendard.className} ${paperlogy.variable} antialiased`}>
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
-        <main>{children}</main>
+        <main>{children}
+        <AppShell /></main>
       </body>
     </html>
   )

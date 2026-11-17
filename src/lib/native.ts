@@ -60,7 +60,7 @@ export const shareImage = async (blob: Blob, fileName: string, text: string) => 
 }
 
 const NOTIFY_MESSAGES = [
-  '점심 30분 전입니다. 메뉴 결재 올리셨습니까?',
+  '점심 30분 전입니다. 오늘 점심 메뉴 추천해 드리겠습니다!',
   '곧 점심시간입니다. 먹대리가 메뉴 제안드리겠습니다!',
   '오늘 점심 안건이 아직 미결입니다. 지금 결재해 주세요.',
   '점심 메뉴 회의 소집합니다. 3안 준비해 뒀습니다.',

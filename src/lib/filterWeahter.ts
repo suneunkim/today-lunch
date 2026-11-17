@@ -3,7 +3,7 @@ import { MenuType } from '@/types/types'
 export const getTemperatureCondition = (temperature: number) => {
   if (temperature <= 13) {
     return 'cold'
-  } else if (temperature >= 25) {
+  } else if (temperature >= 28) {
     return 'hot'
   } else {
     return 'mild'

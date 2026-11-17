@@ -7,6 +7,12 @@ import { getFavorites, getSettings, saveFavorite, saveSettings } from '@/lib/sto
 
 const EXTRAS = ['', '맛집', '혼밥', '점심특선']
 
+const pin = (
+  <svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor' className='inline -mt-[2px] mr-1'>
+    <path d='M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z' />
+  </svg>
+)
+
 const inputStyle =
   'flex-1 min-w-0 h-11 px-3 rounded-[10px] border border-customs-gray-90 text-label2 text-customs-gray-10 bg-customs-gray-100'
 const smallButton = 'h-11 px-4 rounded-[10px] bg-customs-gray-10 text-customs-gray-100 text-label1 shrink-0'
@@ -106,12 +112,14 @@ const MapPanel = ({ menu }: { menu: string }) => {
           onClick={() => open('kakao', menu, extra)}
           className='flex-1 py-[14px] rounded-[14px] text-label1 bg-[#FEE500] text-[#191919]'
         >
+          {pin}
           카카오맵에서 찾기
         </button>
         <button
           onClick={() => open('naver', menu, extra)}
           className='flex-1 py-[14px] rounded-[14px] text-label1 bg-[#03C75A] text-white'
         >
+          {pin}
           네이버 지도에서 찾기
         </button>
       </div>

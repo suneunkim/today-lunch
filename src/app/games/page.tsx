@@ -21,12 +21,11 @@ const Page = () => {
 
   useEffect(() => {
     const today = dateKey()
-    const tries = Number(getFlag(`orderTries:${today}`)) || 0
     const orderBest = Number(getFlag('orderBest'))
     const timingBest = Number(getFlag('timingBest'))
     setStatus({
       fortune: getFlag('fortuneOpened') === today ? '오늘 운세 확인 완료' : '오늘 운세 도착!',
-      order: `오늘 남은 도전 ${Math.max(0, 3 - tries)}번${orderBest ? ` · 최고 ${sec(orderBest)}초` : ''}`,
+      order: orderBest ? `내 최고 기록 ${sec(orderBest)}초` : '',
       timing: timingBest ? `최고 기록 오차 ${sec(timingBest)}초` : '',
     })
   }, [])

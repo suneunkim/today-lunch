@@ -12,7 +12,8 @@ import { MENUS } from '@/app/data/menus'
 import { menu as categoryRows } from '@/app/data/data'
 import { recommend } from '@/lib/recommend'
 import { trackPick, trackUse } from '@/lib/firebase/stats'
-import { addHistory } from '@/lib/storage'
+import { addDislike, recordMessage, setTodayLunch, snoozeMenu } from '@/lib/storage'
+import { toast } from '@/lib/toast'
 import { MenuType } from '@/types/types'
 
 const today = () => {
@@ -60,11 +61,21 @@ const Page = () => {
     step(0)
   }
 
+  // 지금 나온 메뉴를 며칠 또는 아예 빼고 바로 다시 뽑습니다.
+  const exclude = (forever: boolean) => {
+    if (!result) return
+    if (forever) addDislike(result.name)
+    else snoozeMenu(result.name, 3)
+    toast(forever ? `‘${result.name}’은(는) 이제 추천하지 않습니다.` : `‘${result.name}’은(는) 3일간 추천하지 않습니다.`)
+    spin()
+  }
+
   const approve = () => {
     if (!result || approved) return
     setApproved(true)
-    addHistory(result.name)
-    trackPick(result.name)
+    const record = setTodayLunch(result.name)
+    toast(recordMessage(result.name, record))
+    if (record.changed) trackPick(result.name)
   }
 
   return (
@@ -76,7 +87,7 @@ const Page = () => {
           <div className='relative'>
             <div className='absolute bg-[#D1C9BD] top-[-8px] right-[-8px] w-full h-full rounded-[20px]' />
             <section className='relative px-[24px] py-[28px] bg-customs-gray-100 rounded-[20px]'>
-              <DocTitle>긴급 메뉴 뽑기</DocTitle>
+              <DocTitle>🎲 긴급 메뉴 뽑기</DocTitle>
               <dl className='mt-5 text-label2 text-customs-gray-25 grid grid-cols-[64px_1fr] gap-y-1'>
                 <dt className='text-customs-gray-50'>기안일</dt>
                 <dd>{today()}</dd>
@@ -108,9 +119,9 @@ const Page = () => {
           </div>
 
           {/* 범위: 전체에서 뽑을지, 한 종류 안에서 뽑을지 */}
-          <div className='flex gap-2 mt-6 overflow-x-auto pb-1 -mx-5 px-5'>
+          <div className='flex flex-wrap gap-2 mt-6'>
             {['전체', ...categoryRows.flat()].map((name) => (
-              <div key={name} className='shrink-0'>
+              <div key={name}>
                 <Chip
                   selected={category === name}
                   onClick={() => {
@@ -143,6 +154,17 @@ const Page = () => {
               </div>
             )}
           </section>
+
+          {result && !approved && (
+            <div className='flex justify-center gap-5 -mt-1 mb-5 text-label2 text-customs-gray-100'>
+              <button className='underline underline-offset-4' onClick={() => exclude(false)}>
+                3일간 제외
+              </button>
+              <button className='underline underline-offset-4' onClick={() => exclude(true)}>
+                아예 추천 제외
+              </button>
+            </div>
+          )}
 
           {result && <MapPanel menu={result.name} />}
         </div>

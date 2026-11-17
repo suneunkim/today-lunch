@@ -21,6 +21,27 @@ const withTimeout = <T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T>
     new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
   ])
 
+// 같은 순위를 화면을 열 때마다 다시 읽지 않도록 몇 분간 기기에 기억해 둡니다. (하루 읽기 한도 절약)
+const cached = async <T>(key: string, minutes: number, load: () => Promise<T>, isEmpty: (v: T) => boolean): Promise<T> => {
+  try {
+    const raw = window.localStorage.getItem('mukdaeri:cache:' + key)
+    if (raw) {
+      const { at, value } = JSON.parse(raw)
+      if (Date.now() - at < minutes * 60000) return value as T
+    }
+  } catch {}
+  const value = await load()
+  try {
+    if (!isEmpty(value)) window.localStorage.setItem('mukdaeri:cache:' + key, JSON.stringify({ at: Date.now(), value }))
+  } catch {}
+  return value
+}
+export const clearCache = (key: string) => {
+  try {
+    window.localStorage.removeItem('mukdaeri:cache:' + key)
+  } catch {}
+}
+
 const bump = (path: [string, string], fields: Record<string, number>) => {
   if (!firebaseEnabled) return
   const data = Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, increment(v)]))
@@ -52,7 +73,8 @@ export const trackPick = (menuName: string) => {
   bump(['dailyStats', dateKey()], { picks: 1 })
 }
 
-export const getTotals = async () => {
+export const getTotals = () => cached('totals', 10, loadTotals, (v) => v === null)
+const loadTotals = async () => {
   if (!firebaseEnabled) return null
   const snap = await withTimeout(getDoc(doc(db, ...totalDoc)), null)
   if (!snap || !snap.exists()) return null
@@ -60,7 +82,8 @@ export const getTotals = async () => {
   return { useCount: (data.useCount as number) ?? 0, installs: (data.installs as number) ?? 0 }
 }
 
-export const fetchTopMenu = async (count = 5) => {
+export const fetchTopMenu = (count = 5) => cached(`top${count}`, 10, () => loadTopMenu(count), (v) => v.length === 0)
+const loadTopMenu = async (count: number) => {
   if (!firebaseEnabled) return []
   const q = query(collection(db, 'menuCounts'), orderBy('count', 'desc'), limit(count))
   const snap = await withTimeout(getDocs(q), null)
@@ -88,6 +111,7 @@ export const fetchDailyStats = async (days = 14): Promise<DailyStat[]> => {
 
 // ── 메뉴 월드컵: 한 판이 끝나면 고른 횟수(득표)와 우승을 한꺼번에 올립니다.
 export const trackWorldcup = (picks: Record<string, number>, winner: string) => {
+  clearCache('worldcup')
   Object.entries(picks).forEach(([name, count]) => {
     bump(['worldcup', name], name === winner ? { picks: count, wins: 1 } : { picks: count })
   })
@@ -95,7 +119,8 @@ export const trackWorldcup = (picks: Record<string, number>, winner: string) => 
 
 export type WorldcupRank = { name: string; wins: number; picks: number }
 
-export const fetchWorldcupRank = async (count = 10): Promise<WorldcupRank[]> => {
+export const fetchWorldcupRank = (count = 10) => cached('worldcup', 5, () => loadWorldcupRank(count), (v) => v.length === 0)
+const loadWorldcupRank = async (count: number): Promise<WorldcupRank[]> => {
   if (!firebaseEnabled) return []
   const q = query(collection(db, 'worldcup'), orderBy('wins', 'desc'), limit(count))
   const snap = await withTimeout(getDocs(q), null)
@@ -110,12 +135,17 @@ export type TapRank = { name: string; ms: number }
 export const submitTapScore = async (name: string, ms: number, board: 'scores' | 'hard' = 'scores') => {
   if (!firebaseEnabled) return false
   return withTimeout(
-    addDoc(collection(db, 'tapRank', dateKey(), board), { name, ms }).then(() => true),
+    addDoc(collection(db, 'tapRank', dateKey(), board), { name, ms }).then(() => {
+      clearCache(`tap:${board}:${dateKey()}`)
+      return true
+    }),
     false
   )
 }
 
-export const fetchTapRank = async (count = 10, board: 'scores' | 'hard' = 'scores'): Promise<TapRank[]> => {
+export const fetchTapRank = (count = 10, board: 'scores' | 'hard' = 'scores') =>
+  cached(`tap:${board}:${dateKey()}`, 2, () => loadTapRank(count, board), (v) => v.length === 0)
+const loadTapRank = async (count: number, board: 'scores' | 'hard'): Promise<TapRank[]> => {
   if (!firebaseEnabled) return []
   const q = query(collection(db, 'tapRank', dateKey(), board), orderBy('ms', 'asc'), limit(count))
   const snap = await withTimeout(getDocs(q), null)
@@ -142,4 +172,14 @@ export const fetchOrderPercentile = async (ms: number, board: 'scores' | 'hard')
   let faster = 0
   for (let i = 0; i < mine; i++) faster += data[`s${i}`] ?? 0
   return Math.max(1, Math.round(((faster + 1) / plays) * 100))
+}
+
+// 기록 분포 전체 (이용 현황 화면용)
+export const fetchOrderStats = async (board: 'scores' | 'hard') => {
+  if (!firebaseEnabled) return null
+  const snap = await withTimeout(getDoc(doc(db, 'orderStats', board)), null)
+  if (!snap || !snap.exists()) return null
+  const data = snap.data() as Record<string, number>
+  const buckets = Array.from({ length: 61 }, (_, i) => data[`s${i}`] ?? 0)
+  return { plays: data.plays ?? 0, buckets }
 }

@@ -8,7 +8,8 @@ import Chip from '@/components/elements/Chip'
 import DocTitle from '@/components/elements/DocTitle'
 import TextBubble from '@/components/elements/TextBubble'
 import { lunchTypeOf } from '@/lib/lunchType'
-import { Prefs, savePrefs } from '@/lib/storage'
+import { Prefs, savePrefs, saveSettings } from '@/lib/storage'
+import { scheduleLunchNotifications } from '@/lib/native'
 import { MenuTag } from '@/types/types'
 
 type Answers = Pick<Prefs, 'spicy' | 'base' | 'volume'>
@@ -48,8 +49,12 @@ const QUESTIONS: {
 
 const AVOID_OPTIONS: { tag: MenuTag; label: string }[] = [
   { tag: '해산물', label: '해산물' },
-  { tag: '내장', label: '내장·선지·순대' },
-  { tag: '향신료', label: '고수·마라 같은 향신료' },
+  { tag: '날것', label: '회·육회 같은 날것' },
+  { tag: '내장', label: '내장·선지' },
+  { tag: '순대', label: '순대' },
+  { tag: '고수', label: '고수' },
+  { tag: '마라', label: '마라' },
+  { tag: '향신료', label: '커리·쯔란 등 강한 향신료' },
 ]
 
 const optionStyle =
@@ -61,6 +66,7 @@ const Page = () => {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Answers>({ spicy: 'ok', base: null, volume: null })
   const [avoid, setAvoid] = useState<MenuTag[]>([])
+  const [lunchTime, setLunchTime] = useState('12:00')
 
   const finish = (save: boolean) => {
     if (save) {
@@ -78,7 +84,18 @@ const Page = () => {
 
   const question = QUESTIONS[step]
   const isAvoidStep = step === QUESTIONS.length
-  const isResult = step === QUESTIONS.length + 1
+  const isNotifyStep = step === QUESTIONS.length + 1
+  const isResult = step === QUESTIONS.length + 2
+  const TOTAL = QUESTIONS.length + 2
+
+  // 점심시간을 저장하고, 원하면 30분 전 알림을 켭니다.
+  const answerNotify = async (wantsNotify: boolean) => {
+    const [h, m] = lunchTime.split(':').map(Number)
+    let notify = false
+    if (wantsNotify) notify = (await scheduleLunchNotifications(h, m)) === 'scheduled'
+    saveSettings({ lunchHour: h, lunchMinute: m, notify })
+    setStep((prev) => prev + 1)
+  }
   const type = lunchTypeOf(answers)
 
   return (
@@ -103,7 +120,7 @@ const Page = () => {
         {question && (
           <section className='px-6 py-7 bg-customs-gray-100 rounded-[20px]'>
             <p className='text-caption2 font-paperlogy text-customs-orange-50 mb-2'>
-              질문 {step + 1} / {QUESTIONS.length + 1}
+              질문 {step + 1} / {TOTAL}
             </p>
             <h2 className='text-heading3 font-paperlogy text-customs-gray-10 mb-5'>{question.ask}</h2>
             <div className='flex flex-col gap-[10px]'>
@@ -124,10 +141,10 @@ const Page = () => {
         {isAvoidStep && (
           <section className='px-6 py-7 bg-customs-gray-100 rounded-[20px]'>
             <p className='text-caption2 font-paperlogy text-customs-orange-50 mb-2'>
-              질문 {step + 1} / {QUESTIONS.length + 1}
+              질문 {step + 1} / {TOTAL}
             </p>
             <h2 className='text-heading3 font-paperlogy text-customs-gray-10 mb-2'>
-              마지막으로, 못 먹는 것이 있다면 체크해 주세요.
+              못 먹는 것이 있다면 체크해 주세요.
             </h2>
             <p className='text-label2 text-customs-gray-50 mb-5'>체크한 재료가 들어간 메뉴는 제안하지 않겠습니다.</p>
             <div className='flex flex-wrap gap-2 mb-6'>
@@ -153,6 +170,44 @@ const Page = () => {
           </section>
         )}
 
+        {isNotifyStep && (
+          <section className='px-6 py-7 bg-customs-gray-100 rounded-[20px]'>
+            <p className='text-caption2 font-paperlogy text-customs-orange-50 mb-2'>
+              질문 {step + 1} / {TOTAL}
+            </p>
+            <h2 className='text-heading3 font-paperlogy text-customs-gray-10 mb-2'>
+              마지막으로, 점심시간이 언제입니까?
+            </h2>
+            <p className='text-label2 text-customs-gray-50 mb-5'>
+              평일 점심 30분 전에 “오늘 점심 메뉴 추천해 드리겠습니다!” 하고 알려드릴 수 있습니다.
+            </p>
+            <div className='flex flex-wrap gap-2 mb-3'>
+              {['11:30', '12:00', '12:30', '13:00'].map((time) => (
+                <Chip key={time} selected={lunchTime === time} onClick={() => setLunchTime(time)}>
+                  {time === '13:00' ? '1:00' : time}
+                </Chip>
+              ))}
+            </div>
+            <label className='flex items-center justify-between text-label2 text-customs-gray-25 mb-6'>
+              다른 시간
+              <input
+                type='time'
+                className='h-11 px-3 rounded-[10px] border border-customs-gray-90'
+                value={lunchTime}
+                onChange={(e) => e.target.value && setLunchTime(e.target.value)}
+              />
+            </label>
+            <div className='flex gap-[10px]'>
+              <Button type='secondary' onClick={() => answerNotify(false)}>
+                알림은 괜찮아요
+              </Button>
+              <Button type='primary' onClick={() => answerNotify(true)}>
+                알림 받기
+              </Button>
+            </div>
+          </section>
+        )}
+
         {isResult && (
           <section className='px-6 py-7 bg-customs-gray-100 rounded-[20px] pop-in'>
             <DocTitle>점심 유형 분석 보고</DocTitle>
@@ -160,7 +215,10 @@ const Page = () => {
             <h2 className='text-[24px] leading-[130%] font-bold font-paperlogy text-customs-orange-50 mt-1'>
               {type.name}
             </h2>
-            <p className='text-body2 text-customs-gray-25 mt-3 mb-6'>{type.desc}</p>
+            <p className='text-body2 text-customs-gray-25 mt-3'>{type.desc}</p>
+            <p className='text-label2 text-customs-gray-50 mt-3 mb-6 rounded-[12px] bg-customs-gray-95 px-4 py-3'>
+              취향에 맞는 메뉴가 조금 더 자주 나올 뿐, 다른 메뉴도 골고루 제안드립니다. 못 먹는다고 한 것만 확실히 뺍니다.
+            </p>
             <Button type='primary' onClick={() => finish(true)}>
               이 취향으로 제안받기
             </Button>

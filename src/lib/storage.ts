@@ -100,10 +100,31 @@ export type HistoryItem = { id: number; name: string; date: string }
 
 export const getHistory = () => read<HistoryItem[]>('history', [])
 export const addHistory = (name: string, date: string = dateKey()) => {
-  const next = [{ id: Date.now(), name, date }, ...getHistory()].slice(0, 500)
+  const next = [{ id: Math.floor(Date.now() / 10) * 10, name, date }, ...getHistory()].slice(0, 500)
   write('history', next)
   return next
 }
+// 추천·랜덤 뽑기·운세·월드컵에서 "이걸로 할게"를 누르면 오늘의 점심으로 기록합니다.
+// 하루에 한 끼만 남도록, 오늘 이미 기록한 메뉴가 있으면 그 자리를 바꿉니다.
+// (직접 기록하기로 넣은 것은 addHistory라서 여러 개 남길 수 있습니다.)
+const TODAY_MARK = 1 // id 끝자리로 "오늘의 점심" 기록을 구분
+export const getTodayLunch = () => getHistory().find((item) => item.date === dateKey() && item.id % 10 === TODAY_MARK)?.name ?? ''
+export const setTodayLunch = (name: string) => {
+  const today = dateKey()
+  const history = getHistory()
+  const prev = history.find((item) => item.date === today && item.id % 10 === TODAY_MARK)
+  if (prev?.name === name) return { changed: false, replaced: '' }
+  const id = Math.floor(Date.now() / 10) * 10 + TODAY_MARK
+  write('history', [{ id, name, date: today }, ...history.filter((item) => item !== prev)].slice(0, 500))
+  return { changed: true, replaced: prev?.name ?? '' }
+}
+export const recordMessage = (name: string, result: { changed: boolean; replaced: string }) =>
+  !result.changed
+    ? `오늘 점심은 이미 ‘${name}’(으)로 기록돼 있습니다.`
+    : result.replaced
+    ? `오늘 점심 기록을 ‘${result.replaced}’에서 ‘${name}’(으)로 바꿨습니다.`
+    : `‘${name}’을(를) 오늘 먹은 기록에 추가했습니다.`
+
 export const removeHistory = (id: number) => {
   const next = getHistory().filter((item) => item.id !== id)
   write('history', next)
@@ -118,6 +139,21 @@ export const getRecentNames = (days: number) => {
   return getHistory()
     .filter((item) => item.date > fromKey)
     .map((item) => item.name)
+}
+
+// ── 며칠간만 추천에서 빼기 (메뉴 이름 → 다시 나오기 시작하는 날짜)
+export const getSnoozed = () => {
+  const today = dateKey()
+  return Object.entries(read<Record<string, string>>('snooze', {}))
+    .filter(([, until]) => until > today)
+    .map(([name]) => name)
+}
+export const snoozeMenu = (name: string, days = 3) => {
+  const until = new Date()
+  until.setDate(until.getDate() + days)
+  const today = dateKey()
+  const kept = Object.fromEntries(Object.entries(read<Record<string, string>>('snooze', {})).filter(([, d]) => d > today))
+  write('snooze', { ...kept, [name]: dateKey(until) })
 }
 
 // ── 단골집 메모 (메뉴 이름 → 식당 이름)

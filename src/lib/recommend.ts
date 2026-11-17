@@ -1,7 +1,7 @@
 import { MENUS } from '@/app/data/menus'
 import { 해장제외전체 } from '@/app/data/food'
 import { CategoryName, MenuType } from '@/types/types'
-import { getPrefs, getRecentNames, getSettings, Prefs } from './storage'
+import { getPrefs, getRecentNames, getSettings, getSnoozed, Prefs } from './storage'
 
 export type FilterKey = 'mild' | 'light' | 'hearty' | 'solo' | 'cheap'
 
@@ -74,7 +74,8 @@ type Options = {
 
 export const recommend = ({ categories, filters = [], count, exclude = [] }: Options) => {
   const prefs = getPrefs()
-  const recent = getRecentNames(getSettings().excludeDays)
+  // 최근 먹은 메뉴 + "3일간 제외"로 미뤄 둔 메뉴
+  const recent = [...getRecentNames(getSettings().excludeDays), ...getSnoozed()]
 
   const isAll = categories.length === 0 || categories.includes('전체')
   const base = (isAll ? 해장제외전체 : MENUS).filter(

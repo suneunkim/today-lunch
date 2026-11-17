@@ -33,8 +33,12 @@ const SPICY: { value: Prefs['spicy']; label: string }[] = [
 ]
 const AVOID: { tag: MenuTag; label: string }[] = [
   { tag: '해산물', label: '해산물' },
-  { tag: '내장', label: '내장·선지·순대' },
-  { tag: '향신료', label: '고수·마라' },
+  { tag: '날것', label: '회·육회 같은 날것' },
+  { tag: '내장', label: '내장·선지' },
+  { tag: '순대', label: '순대' },
+  { tag: '고수', label: '고수' },
+  { tag: '마라', label: '마라' },
+  { tag: '향신료', label: '커리·쯔란 등 강한 향신료' },
 ]
 const LINKS = [
   { href: '/stats', label: '이용 현황' },

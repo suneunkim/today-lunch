@@ -9,7 +9,8 @@ import MapPanel from '@/components/features/map/MapPanel'
 import ShareButton from '@/components/ShareButton'
 import { 해장제외전체 } from '@/app/data/food'
 import { trackPick } from '@/lib/firebase/stats'
-import { addHistory, dateKey, getFlag, getPrefs, setFlag } from '@/lib/storage'
+import { dateKey, getFlag, getPrefs, getTodayLunch, recordMessage, setFlag, setTodayLunch } from '@/lib/storage'
+import { toast } from '@/lib/toast'
 import { MenuType } from '@/types/types'
 
 const MESSAGES = [
@@ -56,7 +57,7 @@ const ZODIAC_LINES = [
   '양보한 메뉴가 의외로 입에 맞습니다.',
   '즉흥적으로 고른 메뉴가 정답입니다.',
   '꼼꼼히 리뷰를 본 보람이 있는 날입니다.',
-  '단골집에 가면 서비스가 나올 운입니다.',
+  '단골집에 가면 반갑게 맞아 줄 운입니다.',
   '든든하게 먹을수록 오후가 잘 풀립니다.',
 ]
 
@@ -104,6 +105,7 @@ const Page = () => {
         !(prefs.spicy === 'no' && menu.tags.includes('매운')) &&
         !prefs.avoid.some((tag) => menu.tags.includes(tag))
     )
+    const menu = pick(pool.length ? pool : 해장제외전체)
     setFortune({
       stars: 3 + Math.floor(rand() * 3),
       message: pick(MESSAGES),
@@ -112,10 +114,12 @@ const Page = () => {
       direction: pick(DIRECTIONS),
       number: 1 + Math.floor(rand() * 9),
       zodiacLines: [...ZODIAC_LINES].sort(() => rand() - 0.5),
-      menu: pick(pool.length ? pool : 해장제외전체),
+      menu,
     })
     setOpened(getFlag('fortuneOpened') === today)
     setZodiac(getFlag('zodiac'))
+    // 이미 오늘 점심으로 기록한 메뉴면 버튼을 완료 상태로
+    setApproved(getTodayLunch() === menu.name)
   }, [today])
 
   const open = () => {
@@ -126,8 +130,9 @@ const Page = () => {
   const approve = () => {
     if (!fortune || approved) return
     setApproved(true)
-    addHistory(fortune.menu.name)
-    trackPick(fortune.menu.name)
+    const record = setTodayLunch(fortune.menu.name)
+    toast(recordMessage(fortune.menu.name, record))
+    if (record.changed) trackPick(fortune.menu.name)
   }
 
   const [, m, d] = today.split('-').map(Number)
@@ -211,7 +216,7 @@ const Page = () => {
                   text={`[${m}월 ${d}일 점심 운세] ${'★'.repeat(fortune.stars)}\n${fortune.message}\n행운의 메뉴: ${fortune.menu.name} · 행운의 색: ${fortune.color.name}\n- 먹대리 드림`}
                 />
                 <Button type='primary' className='!py-3 !rounded-[14px] !text-label1' onClick={approve} disabled={approved}>
-                  {approved ? '결재 완료' : '행운의 메뉴로 결재'}
+                  {approved ? '오늘 점심으로 기록됨' : '오늘 이걸로 먹기'}
                 </Button>
               </div>
             </section>

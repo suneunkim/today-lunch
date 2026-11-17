@@ -7,6 +7,17 @@ import { MENUS } from '@/app/data/menus'
 import { findMenu } from '@/app/data/food'
 import { addHistory, dateKey, getHistory, HistoryItem, removeHistory } from '@/lib/storage'
 
+// 메뉴를 먹는 형태로 나눕니다 (카테고리와는 다른 기준)
+const shapeOf = (name: string) => {
+  const menu = findMenu(name)
+  if (/샐러드|포케|요거트|아사이|월남쌈/.test(name)) return '샐러드'
+  if (/샌드위치|버거|토스트|피자|파니니|베이글|핫도그|반미|타코|브리또|케밥|퀘사디아|랩$/.test(name)) return '빵·랩'
+  if (menu?.tags.includes('면')) return '면'
+  if (menu?.cats.includes('국물')) return '국물'
+  if (/떡볶이|순대|만두|튀김|김밥|라볶이/.test(name)) return '분식'
+  return '밥'
+}
+
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
 const formatDate = (key: string) => {
   const [y, m, d] = key.split('-').map(Number)
@@ -25,14 +36,17 @@ const Page = () => {
     const items = history.filter((item) => item.date.startsWith(month))
     const menuCount: Record<string, number> = {}
     const catCount: Record<string, number> = {}
+    const shapeCount: Record<string, number> = {}
     items.forEach((item) => {
       menuCount[item.name] = (menuCount[item.name] ?? 0) + 1
       // 한 메뉴가 여러 카테고리에 속하면 대표(첫 번째) 카테고리로 셉니다.
       const cat = findMenu(item.name)?.cats[0] ?? '기타'
       catCount[cat] = (catCount[cat] ?? 0) + 1
+      const shape = shapeOf(item.name)
+      shapeCount[shape] = (shapeCount[shape] ?? 0) + 1
     })
     const sort = (o: Record<string, number>) => Object.entries(o).sort((a, b) => b[1] - a[1])
-    return { total: items.length, menus: sort(menuCount).slice(0, 3), cats: sort(catCount) }
+    return { total: items.length, menus: sort(menuCount).slice(0, 3), cats: sort(catCount), shapes: sort(shapeCount) }
   }, [history, month])
 
   const handleAdd = () => {
@@ -48,7 +62,7 @@ const Page = () => {
         <Card title={`${Number(month.slice(5))}월 점심 보고`}>
           {report.total === 0 ? (
             <p className='text-label2 text-customs-gray-50'>
-              이번 달 기록이 없습니다. 메뉴를 제안받고 “이걸로 할게!”를 누르면 여기에 쌓입니다.
+              이번 달 기록이 없습니다. 메뉴를 고르고 “이걸로 할게!”를 누르면 하루에 한 끼씩 여기에 쌓입니다.
             </p>
           ) : (
             <>
@@ -60,20 +74,28 @@ const Page = () => {
                   </>
                 )}
               </p>
-              <div className='flex flex-col gap-2 mt-4'>
-                {report.cats.map(([cat, count]) => (
-                  <div key={cat} className='flex items-center gap-3 text-label2 text-customs-gray-25'>
-                    <span className='w-12 shrink-0'>{cat}</span>
-                    <div className='flex-1 h-3 rounded-full bg-customs-gray-95'>
-                      <div
-                        className='h-3 rounded-full bg-customs-orange-50'
-                        style={{ width: `${(count / report.total) * 100}%` }}
-                      />
-                    </div>
-                    <span className='w-8 text-right shrink-0'>{count}회</span>
+              {[
+                { title: '종류별', rows: report.cats },
+                { title: '형태별', rows: report.shapes },
+              ].map((group) => (
+                <div key={group.title} className='mt-5'>
+                  <p className='text-label1 text-customs-gray-25 mb-2'>{group.title}</p>
+                  <div className='flex flex-col gap-2'>
+                    {group.rows.map(([label, count]) => (
+                      <div key={label} className='flex items-center gap-3 text-label2 text-customs-gray-25'>
+                        <span className='w-12 shrink-0'>{label}</span>
+                        <div className='flex-1 h-3 rounded-full bg-customs-gray-95'>
+                          <div
+                            className='h-3 rounded-full bg-customs-orange-50'
+                            style={{ width: `${(count / report.total) * 100}%` }}
+                          />
+                        </div>
+                        <span className='w-8 text-right shrink-0'>{count}회</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </>
           )}
         </Card>

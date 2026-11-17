@@ -15,7 +15,7 @@ const WeatherButton = ({ iconName, smallWeather, onClick }: Props) => {
   `
 
   const styles = {
-    날씨: `${smallWeather ? 'bg-[#CDC8B8] text-customs-gray-25' : 'bg-customs-green-70'}`,
+    날씨: `${'bg-[#FFF1B8]'}`,
   }
 
   const ButtonText = {
