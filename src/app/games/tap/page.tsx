@@ -34,21 +34,22 @@ const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
 const shuffle = <T,>(list: T[]) => [...list].sort(() => Math.random() - 0.5)
 const makeNickname = () => `${pick(ADJ)} ${pick(NOUN)} ${1000 + Math.floor(Math.random() * 9000)}`
 
-// 챌린저 모드: 칸마다 색이 깔리고, 주문서에는 엉뚱한 칸의 색이 칠해져 더 헷갈립니다.
-const TILE_COLORS = ['#FFD98A', '#A9DBFF', '#C4EBA4', '#FBB8D6', '#D3C6FB', '#FFC19A']
+// 챌린저 모드
+// - 한 주문에 메뉴가 2개: 적힌 순서대로 둘 다 눌러야 합니다.
+// - 칸마다 파스텔 색이 깔리고 주문서에도 색이 칠해지지만, 색은 정답과 아무 상관이 없습니다(무작위).
+// - 잘못 누르면 칸 위치와 색이 전부 다시 섞입니다.
+const TILE_COLORS = ['#FFE9BF', '#D3E9FF', '#DCF3CB', '#FFDCEA', '#E7E0FF', '#FFE1D0']
 
-type Round = { order: string; board: string[]; table: number; colors: string[]; lure: string }
+type Round = { orders: string[]; board: string[]; table: number; colors: string[]; lure: string }
 // 10판: 메뉴판 묶음 순서를 섞고, 판마다 주문 메뉴 하나와 자리 배치를 새로 정합니다.
 const makeRounds = (): Round[] =>
   shuffle(BOARDS)
     .slice(0, ROUNDS)
     .map((names) => {
       const board = shuffle(names)
-      const order = pick(board)
       const colors = board.map(() => pick(TILE_COLORS))
-      // 주문서 색은 정답이 아닌 칸의 색에서 고릅니다 (색만 보고 누르면 틀리도록)
-      const others = colors.filter((c) => c !== colors[board.indexOf(order)])
-      return { order, board, table: 1 + Math.floor(Math.random() * 12), colors, lure: pick(others.length ? others : colors) }
+      // 주문 2개(챌린저용). 기본 모드는 첫 번째만 씁니다.
+      return { orders: shuffle(board).slice(0, 2), board, table: 1 + Math.floor(Math.random() * 12), colors, lure: pick(TILE_COLORS) }
     })
 
 const sec = (ms: number) => (ms / 1000).toFixed(2)
@@ -67,6 +68,7 @@ const Page = () => {
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
   const [rounds, setRounds] = useState<Round[]>([])
   const [index, setIndex] = useState(0)
+  const [step, setStep] = useState(0) // 챌린저: 한 주문 안에서 몇 번째 메뉴까지 눌렀는지
   const [elapsed, setElapsed] = useState(0)
   const [misses, setMisses] = useState(0)
   const [wrong, setWrong] = useState('')
@@ -102,6 +104,7 @@ const Page = () => {
     if (triesLeft <= 0) return
     setRounds(makeRounds())
     setIndex(0)
+    setStep(0)
     setMisses(0)
     setRegistered('')
     setElapsed(0)
@@ -119,13 +122,30 @@ const Page = () => {
 
   const tap = (name: string) => {
     if (phase !== 'playing') return
-    if (name !== rounds[index].order) {
+    const current = rounds[index]
+    const need = hard ? 2 : 1
+    if (name !== current.orders[step]) {
       penalty.current += PENALTY
       setMisses((m) => m + 1)
       setWrong(name)
       setTimeout(() => setWrong(''), 250)
+      if (hard) {
+        // 챌린저: 틀리면 칸 위치와 색을 다시 섞습니다.
+        setTimeout(() => {
+          setRounds((prev) =>
+            prev.map((r, i) =>
+              i === index ? { ...r, board: shuffle(r.board), colors: r.board.map(() => pick(TILE_COLORS)), lure: pick(TILE_COLORS) } : r
+            )
+          )
+        }, 250)
+      }
       return
     }
+    if (step + 1 < need) {
+      setStep(step + 1)
+      return
+    }
+    setStep(0)
     if (index + 1 < ROUNDS) {
       setIndex(index + 1)
       return
@@ -164,7 +184,7 @@ const Page = () => {
             기본
           </Chip>
           <Chip selected={hard} onClick={() => phase !== 'playing' && setHard(true)}>
-            챌린저 (색깔 방해)
+            챌린저
           </Chip>
         </div>
 
@@ -191,7 +211,9 @@ const Page = () => {
                   {hard && (
                     <>
                       <br />
-                      <b className='text-customs-gray-10'>챌린저: 칸마다 색이 깔립니다. 색에 속지 말고 글자를 보세요.</b>
+                      <b className='text-customs-gray-10'>
+                        챌린저: 주문마다 메뉴 2개를 순서대로 누릅니다. 색은 함정이고, 틀리면 칸이 다시 섞입니다.
+                      </b>
                     </>
                   )}
                   {best > 0 && (
@@ -212,9 +234,15 @@ const Page = () => {
                   style={hard ? { background: round.lure } : undefined}
                 >
                   <p className={`text-caption1 ${hard ? 'text-customs-gray-25' : 'text-customs-gray-50'}`}>{round.table}번 테이블 주문이요!</p>
-                  <h2 className={`font-paperlogy font-bold text-[28px] leading-[125%] mt-1 ${hard ? 'text-customs-gray-10' : 'text-customs-orange-50'}`}>
-                    {round.order}
-                  </h2>
+                  {hard ? (
+                    <h2 className='font-paperlogy font-bold text-[23px] leading-[130%] mt-1 text-customs-gray-10'>
+                      <span className={step > 0 ? 'opacity-30 line-through' : ''}>{round.orders[0]}</span>
+                      <span className='text-customs-gray-50 text-[16px]'> 다음 </span>
+                      <span>{round.orders[1]}</span>
+                    </h2>
+                  ) : (
+                    <h2 className='font-paperlogy font-bold text-[28px] leading-[125%] mt-1 text-customs-orange-50'>{round.orders[0]}</h2>
+                  )}
                 </div>
                 {/* 메뉴판: 판마다 메뉴와 자리가 바뀝니다 */}
                 <div className='grid grid-cols-3 gap-x-2 gap-y-[14px] mt-5'>
@@ -226,6 +254,8 @@ const Page = () => {
                       className={`h-[68px] px-1 rounded-[16px] font-paperlogy font-bold text-[15px] leading-[125%] break-keep select-none touch-manipulation transition-transform duration-75 ${
                         wrong === name
                           ? 'bg-customs-gray-25 text-customs-gray-100 shadow-[0_2px_0_#19181b] translate-y-[4px]'
+                          : hard
+                          ? 'text-customs-gray-10 shadow-[0_4px_0_rgba(0,0,0,0.12)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.12)]'
                           : 'bg-customs-gray-100 text-customs-gray-10 border-2 border-customs-gray-10 shadow-[0_6px_0_#19181b] active:translate-y-[4px] active:shadow-[0_2px_0_#19181b]'
                       }`}
                     >
@@ -240,13 +270,13 @@ const Page = () => {
             {phase === 'done' && (
               <div className='text-center pop-in'>
                 <div className='rounded-[20px] bg-customs-orange-95-bg px-5 py-5'>
-                  <p className='text-label2 text-customs-gray-25'>{grade(elapsed)}</p>
+                  <p className='text-label2 text-customs-gray-25'>{grade(hard ? elapsed / 2 : elapsed)}</p>
                   <h2 className='font-paperlogy font-bold text-[44px] leading-[120%] text-customs-orange-50 mt-1'>
                     {sec(elapsed)}
                     <span className='text-[22px] text-customs-gray-10'> 초</span>
                   </h2>
                   <p className='text-caption1 text-customs-gray-50 mt-1'>
-                    주문 {ROUNDS}건 처리{misses > 0 && ` · 잘못 누름 ${misses}번`}
+                    주문 {ROUNDS}건{hard && ' (메뉴 20개)'} 처리{misses > 0 && ` · 잘못 누름 ${misses}번`}
                     {best === Math.round(elapsed) ? ' · 내 최고 기록!' : best > 0 ? ` · 최고 ${sec(best)}초` : ''}
                   </p>
                 </div>
