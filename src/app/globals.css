@@ -21,3 +21,117 @@ body {
   100% { transform: scale(1); }
 }
 .pop-in { animation: pop 0.35s ease-out; }
+
+/* ── 스피드 주문받기: 메뉴판 칸 모양 4가지 (게임을 시작할 때마다 하나가 무작위로 정해집니다)
+   챌린저 모드에서는 칸마다 --tile 색이 주어져 바탕색을 덮습니다. */
+.tile {
+  position: relative;
+  padding: 0 4px;
+  color: #19181b;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 125%;
+  word-break: keep-all;
+  user-select: none;
+  touch-action: manipulation;
+  transition: scale 0.07s;
+}
+.tile:active { scale: 0.94; }
+@keyframes tile-shake {
+  25% { translate: -4px 0; }
+  75% { translate: 4px 0; }
+}
+.tile-wrong { animation: tile-shake 0.2s; filter: grayscale(1) brightness(0.78); }
+
+/* 포스트잇: 기본은 노란색 한 가지, 챌린저에서는 칸마다 색이 다릅니다 */
+.tile-postit {
+  height: 76px;
+  border-radius: 3px;
+  background: var(--tile, #fff3a6);
+  box-shadow: 2px 5px 8px rgba(0, 0, 0, 0.13);
+  rotate: -2deg;
+}
+.tile-postit:nth-child(3n + 2) { rotate: 1.5deg; }
+.tile-postit:nth-child(3n) { rotate: -1deg; }
+.tile-postit:nth-child(4n) { rotate: 2deg; }
+.tile-postit::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  margin-left: -19px;
+  width: 38px;
+  height: 13px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  rotate: -3deg;
+}
+
+/* 접시: 회전초밥 접시처럼 가운데는 연하게, 안쪽 원에는 다른 색 테두리 */
+.tile-plate {
+  aspect-ratio: 1;
+  padding: 0 15px;
+  border-radius: 50%;
+  font-size: 14px;
+  background: radial-gradient(
+    circle,
+    var(--tile-light, #fffdf8) 0 50%,
+    var(--tile-accent, #f6b98f) 51% 55%,
+    var(--tile, #ffefdc) 56% 100%
+  );
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 1px var(--tile-dark, #ecd9c0),
+    0 6px 12px rgba(60, 40, 10, 0.16);
+}
+
+/* 식권: 바탕색에 맞춘 진한 글씨와 점선 */
+.tile-ticket {
+  height: 72px;
+  padding-top: 20px;
+  border-radius: 10px;
+  background: linear-gradient(var(--tile-light, #fffaf2) 0 22px, var(--tile, #fff1dc) 22px);
+  filter: drop-shadow(0 3px 4px rgba(120, 80, 30, 0.2));
+  -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 8px, #000 8.5px),
+    radial-gradient(circle at 100% 50%, transparent 8px, #000 8.5px);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.tile-ticket.tile-wrong { filter: grayscale(1) brightness(0.78); }
+.tile-ticket::before {
+  content: '식권';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--tile-deep, #f47a3a);
+}
+.tile-ticket::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 21px;
+  border-top: 1.5px dashed var(--tile-deep, #f47a3a);
+  opacity: 0.45;
+}
+
+/* 키보드 자판: 옆면이 보이는 입체 키 */
+.tile-keycap {
+  isolation: isolate;
+  height: 62px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: var(--tile, #e9e7ee);
+  box-shadow: 0 8px 0 var(--tile-dark, #b9b5c4), 0 13px 12px rgba(0, 0, 0, 0.12);
+}
+.tile-keycap::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 3px 6px 7px;
+  border-radius: 9px;
+  background: linear-gradient(var(--tile-light, #ffffff), var(--tile, #f3f2f6));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 2px 3px rgba(0, 0, 0, 0.08);
+}
+.tile-keycap:active { scale: 1; translate: 0 6px; box-shadow: 0 2px 0 var(--tile-dark, #b9b5c4); }

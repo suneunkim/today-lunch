@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
 import Card from '@/components/elements/Card'
+import GameButton from '@/components/elements/GameButton'
 import Chip from '@/components/elements/Chip'
 import Ranking from '@/components/elements/Ranking'
 import { fetchTapRank, submitTapScore, TapRank } from '@/lib/firebase/stats'
@@ -24,6 +25,8 @@ const BOARDS = [
   ['비빔밥', '돌솥비빔밥', '육회비빔밥', '꼬막비빔밥', '열무비빔밥', '멍게비빔밥', '중화비빔밥', '회덮밥', '알밥'],
   ['갈비탕', '삼계탕', '설렁탕', '곰탕', '도가니탕', '추어탕', '해물탕', '매운탕', '감자탕'],
 ]
+// 칸 모양: 게임을 시작할 때마다 하나를 무작위로 고릅니다. (모양은 globals.css의 .tile-*)
+const SKINS = ['postit', 'plate', 'ticket', 'keycap'] as const
 const ROUNDS = 10
 const PENALTY = 1000 // 잘못 누르면 1초 추가
 const MAX_TRIES = 3
@@ -38,9 +41,21 @@ const makeNickname = () => `${pick(ADJ)} ${pick(NOUN)} ${1000 + Math.floor(Math.
 // - 한 주문에 메뉴가 2개: 적힌 순서대로 둘 다 눌러야 합니다.
 // - 칸마다 파스텔 색이 깔리고 주문서에도 색이 칠해지지만, 색은 정답과 아무 상관이 없습니다(무작위).
 // - 잘못 누르면 칸 위치와 색이 전부 다시 섞입니다.
-const TILE_COLORS = ['#FFE9BF', '#D3E9FF', '#DCF3CB', '#FFDCEA', '#E7E0FF', '#FFE1D0']
+// 색 하나는 바탕(tile), 연한 색(light), 진한 색(dark), 글씨용(deep), 어울리는 다른 색(accent)으로 이루어지고,
+// 칸 모양마다 이 색들을 다르게 씁니다 (자판은 옆면에 dark, 접시는 안쪽 테두리에 accent 등).
+const TILE_COLORS = [
+  { tile: '#FFE9A8', light: '#FFF7DA', dark: '#E0C067', deep: '#A87B00', accent: '#F47A3A' },
+  { tile: '#CFE6FF', light: '#ECF5FF', dark: '#98BDE6', deep: '#3A72B0', accent: '#F2A9C4' },
+  { tile: '#D5F0C2', light: '#EFFAE6', dark: '#A2CC87', deep: '#4A8A2E', accent: '#F5C24B' },
+  { tile: '#FFD6E6', light: '#FFF0F6', dark: '#E39FBB', deep: '#BF4F7B', accent: '#8FC7E8' },
+  { tile: '#E3DBFF', light: '#F4F0FF', dark: '#B3A5E6', deep: '#6652BD', accent: '#F5C24B' },
+  { tile: '#FFDCC8', light: '#FFF1E8', dark: '#E5AB8B', deep: '#C56433', accent: '#8CCFB0' },
+]
+type TileColor = (typeof TILE_COLORS)[number]
+const tileVars = (c: TileColor) =>
+  ({ '--tile': c.tile, '--tile-light': c.light, '--tile-dark': c.dark, '--tile-deep': c.deep, '--tile-accent': c.accent }) as React.CSSProperties
 
-type Round = { orders: string[]; board: string[]; table: number; colors: string[]; lure: string }
+type Round = { orders: string[]; board: string[]; table: number; colors: TileColor[]; lure: TileColor }
 // 10판: 메뉴판 묶음 순서를 섞고, 판마다 주문 메뉴 하나와 자리 배치를 새로 정합니다.
 const makeRounds = (): Round[] =>
   shuffle(BOARDS)
@@ -68,6 +83,7 @@ const Page = () => {
   const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
   const [rounds, setRounds] = useState<Round[]>([])
   const [index, setIndex] = useState(0)
+  const [skin, setSkin] = useState<(typeof SKINS)[number] | ''>('')
   const [step, setStep] = useState(0) // 챌린저: 한 주문 안에서 몇 번째 메뉴까지 눌렀는지
   const [elapsed, setElapsed] = useState(0)
   const [misses, setMisses] = useState(0)
@@ -103,6 +119,8 @@ const Page = () => {
   const start = () => {
     if (triesLeft <= 0) return
     setRounds(makeRounds())
+    // 직전 판과 다른 모양으로
+    setSkin((prev) => pick(SKINS.filter((name) => name !== prev)))
     setIndex(0)
     setStep(0)
     setMisses(0)
@@ -231,7 +249,7 @@ const Page = () => {
                 <div
                   key={index}
                   className='reel-tick rounded-[18px] bg-customs-orange-95-bg px-4 py-4 text-center'
-                  style={hard ? { background: round.lure } : undefined}
+                  style={hard ? { background: round.lure.tile } : undefined}
                 >
                   <p className={`text-caption1 ${hard ? 'text-customs-gray-25' : 'text-customs-gray-50'}`}>{round.table}번 테이블 주문이요!</p>
                   {hard ? (
@@ -245,19 +263,13 @@ const Page = () => {
                   )}
                 </div>
                 {/* 메뉴판: 판마다 메뉴와 자리가 바뀝니다 */}
-                <div className='grid grid-cols-3 gap-x-2 gap-y-[14px] mt-5'>
+                <div className={`grid grid-cols-3 mt-5 items-center ${skin === 'postit' ? 'gap-x-3 gap-y-4' : 'gap-x-2 gap-y-[14px]'}`}>
                   {round.board.map((name, i) => (
                     <button
                       key={name}
                       onPointerDown={() => tap(name)}
-                      style={hard && wrong !== name ? { background: round.colors[i] } : undefined}
-                      className={`h-[68px] px-1 rounded-[16px] font-paperlogy font-bold text-[15px] leading-[125%] break-keep select-none touch-manipulation transition-transform duration-75 ${
-                        wrong === name
-                          ? 'bg-customs-gray-25 text-customs-gray-100 shadow-[0_2px_0_#19181b] translate-y-[4px]'
-                          : hard
-                          ? 'text-customs-gray-10 shadow-[0_4px_0_rgba(0,0,0,0.12)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.12)]'
-                          : 'bg-customs-gray-100 text-customs-gray-10 border-2 border-customs-gray-10 shadow-[0_6px_0_#19181b] active:translate-y-[4px] active:shadow-[0_2px_0_#19181b]'
-                      }`}
+                      className={`tile tile-${skin} font-paperlogy ${wrong === name ? 'tile-wrong' : ''}`}
+                      style={hard ? tileVars(round.colors[i]) : undefined}
                     >
                       {name}
                     </button>
@@ -306,17 +318,9 @@ const Page = () => {
 
             {phase !== 'playing' && (
               <div className='mt-5 px-1'>
-                <button
-                  onClick={start}
-                  disabled={triesLeft <= 0}
-                  className={`w-full py-4 rounded-full font-paperlogy font-bold text-[18px] ${
-                    triesLeft <= 0
-                      ? 'bg-customs-gray-90 text-customs-gray-75'
-                      : 'bg-customs-orange-50 text-customs-gray-100 shadow-[0_6px_0_#c2531b] active:translate-y-[4px] active:shadow-[0_2px_0_#c2531b]'
-                  }`}
-                >
+                <GameButton onClick={start} disabled={triesLeft <= 0}>
                   {triesLeft <= 0 ? '오늘 영업 종료! 내일 다시 만나요' : phase === 'done' ? `다시 도전 (${triesLeft}번 남음)` : '영업 시작'}
-                </button>
+                </GameButton>
               </div>
             )}
           </div>

@@ -122,7 +122,7 @@ const Page = () => {
                   <button
                     key={mode.key}
                     onClick={() => start(mode.key)}
-                    className='w-full text-left px-5 py-4 rounded-[14px] border border-customs-gray-90 active:bg-customs-orange-95-bg'
+                    className='w-full text-left px-5 py-4 rounded-[18px] bg-customs-orange-95-bg active:bg-customs-orange-50 active:text-customs-gray-100'
                   >
                     <div className='text-body1Normal text-customs-gray-10'>{mode.label}</div>
                     <div className='text-caption1 text-customs-gray-50 mt-1'>{mode.desc}</div>
@@ -139,30 +139,43 @@ const Page = () => {
           <>
             <div className='flex items-end justify-between'>
               <h2 className='text-[24px] font-bold font-paperlogy text-customs-gray-10'>{roundName(round.length)}</h2>
-              <span className='text-label2 text-customs-gray-50'>
-                {index / 2 + 1} / {round.length / 2} 경기
+              <span className='flex items-center gap-[5px]' aria-label={`${index / 2 + 1} / ${round.length / 2} 경기`}>
+                {round.length <= 16 ? (
+                  Array.from({ length: round.length / 2 }, (_, i) => (
+                    <span
+                      key={i}
+                      className={`w-2 h-2 rounded-full ${i <= index / 2 ? 'bg-customs-orange-50' : 'bg-customs-gray-100'}`}
+                    />
+                  ))
+                ) : (
+                  <span className='text-label2 text-customs-gray-50'>
+                    {index / 2 + 1} / {round.length / 2} 경기
+                  </span>
+                )}
               </span>
             </div>
             <div className='relative flex flex-col gap-3'>
-              {[round[index], round[index + 1]].map((name) => (
+              {[round[index], round[index + 1]].map((name, side) => (
                 <button
                   key={name}
                   onClick={() => choose(name)}
-                  className={`w-full h-[150px] rounded-[20px] px-5 flex flex-col items-center justify-center gap-2 border-2 transition-all duration-200 ${
+                  className={`w-full h-[150px] rounded-[24px] px-5 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
                     picked === name
-                      ? 'bg-customs-orange-50 border-customs-orange-50 text-customs-gray-100 scale-[1.02]'
+                      ? 'bg-customs-orange-50 text-customs-gray-100 scale-[1.03] shadow-[0_6px_0_#c2531b]'
                       : picked
-                      ? 'bg-customs-gray-100 border-customs-gray-100 opacity-40'
-                      : 'bg-customs-gray-100 border-customs-gray-100 text-customs-gray-10'
+                      ? `${side === 0 ? 'bg-[#FFE9A8]' : 'bg-[#CFE6FF]'} opacity-40`
+                      : side === 0
+                      ? 'bg-[#FFE9A8] text-customs-gray-10 shadow-[0_6px_0_#E0C067]'
+                      : 'bg-[#CFE6FF] text-customs-gray-10 shadow-[0_6px_0_#98BDE6]'
                   }`}
                 >
-                  <span className='text-[26px] leading-[120%] font-bold font-paperlogy'>{name}</span>
-                  <span className={`text-label2 ${picked === name ? '' : 'text-customs-gray-50'}`}>
+                  <span className='text-[28px] leading-[120%] font-bold font-paperlogy'>{name}</span>
+                  <span className={`text-label2 ${picked === name ? '' : 'text-customs-gray-25'}`}>
                     {findMenu(name)?.shortDescription}
                   </span>
                 </button>
               ))}
-              <span className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-customs-gray-10 text-customs-gray-100 font-paperlogy text-label1 flex items-center justify-center'>
+              <span className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-customs-gray-100 text-customs-gray-10 font-paperlogy font-bold text-label1 flex items-center justify-center shadow-[0_3px_8px_rgba(0,0,0,0.15)]'>
                 VS
               </span>
             </div>

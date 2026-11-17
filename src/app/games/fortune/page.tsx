@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
+import GameButton from '@/components/elements/GameButton'
 import DocTitle from '@/components/elements/DocTitle'
 import MapPanel from '@/components/features/map/MapPanel'
 import ShareButton from '@/components/ShareButton'
@@ -141,9 +142,9 @@ const Page = () => {
               {m}월 {d}일 점심 운세가 도착했습니다.
             </h2>
             <p className='text-label2 text-customs-gray-50 mt-2 mb-6'>운세는 하루에 한 번, 매일 새로 나옵니다. (재미로만 봐 주세요)</p>
-            <Button type='primary' onClick={open} disabled={!fortune}>
+            <GameButton onClick={open} disabled={!fortune}>
               운세 열어보기
-            </Button>
+            </GameButton>
           </section>
         ) : (
           <>

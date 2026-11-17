@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
 import Button from '@/components/elements/Button'
+import GameButton from '@/components/elements/GameButton'
 import Card from '@/components/elements/Card'
 import Chip from '@/components/elements/Chip'
 import { getFlag, getMembers, setFlag } from '@/lib/storage'
@@ -166,8 +167,8 @@ const Page = () => {
             <p className='text-label2 text-customs-gray-50'>
               12시 정각(12:00:00.00)에 버튼을 누르세요. 4초 뒤부터는 먹대리가 시계를 가립니다.
             </p>
-            <div className='mt-4 h-[108px] rounded-[14px] bg-customs-orange-95-bg flex items-center justify-center'>
-              <span className='font-paperlogy font-bold text-[34px] text-customs-orange-50 tabular-nums'>
+            <div className='mt-4 h-[108px] rounded-[20px] bg-customs-gray-10 flex items-center justify-center'>
+              <span className='font-paperlogy font-bold text-[36px] text-customs-orange-50 tabular-nums'>
                 {hidden ? '1?:??:??.??' : display}
               </span>
             </div>
@@ -183,20 +184,12 @@ const Page = () => {
             )}
 
             <div className='mt-5'>
-              {phase === 'idle' && (
-                <Button type='primary' onClick={start}>
-                  시작 (11:59:50)
-                </Button>
-              )}
-              {phase === 'running' && (
-                <Button type='primary' onClick={stop}>
-                  점심 먹으러 출발!
-                </Button>
-              )}
+              {phase === 'idle' && <GameButton onClick={start}>시작 (11:59:50)</GameButton>}
+              {phase === 'running' && <GameButton onClick={stop}>점심 먹으러 출발!</GameButton>}
               {phase === 'done' && (
-                <Button type='primary' onClick={next}>
+                <GameButton onClick={next}>
                   {mode === 'bet' ? (turn + 1 < names.length ? `다음: ${names[turn + 1]}` : '결과 보기') : '다시 도전'}
-                </Button>
+                </GameButton>
               )}
             </div>
           </section>

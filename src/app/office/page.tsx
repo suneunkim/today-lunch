@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Container from '@/components/Container'
-import Button from '@/components/elements/Button'
+import GameButton from '@/components/elements/GameButton'
 import Card from '@/components/elements/Card'
 import Chip from '@/components/elements/Chip'
 import Ladder from '@/components/features/office/Ladder'
@@ -138,9 +138,9 @@ const WhoPays = () => {
       </div>
       {winner && <p className='text-label2 text-customs-gray-25 mt-3 text-center'>🦝 {line}</p>}
       <div className='mt-4'>
-        <Button type='primary' onClick={pick} disabled={members.length < 2 || spinning}>
+        <GameButton onClick={pick} disabled={members.length < 2 || spinning}>
           {winner ? '다시 뽑기' : '결제자 뽑기'}
-        </Button>
+        </GameButton>
       </div>
         </>
       )}
