@@ -10,6 +10,8 @@ const games = [
   { key: 'worldcup', href: '/worldcup', emoji: '🏆', color: '#FFE9A8', title: '메뉴 월드컵', desc: '국룰 점심 메뉴 토너먼트와 역대 우승 순위' },
   { key: 'fortune', href: '/games/fortune', emoji: '🥠', color: '#FFD6E6', title: '오늘의 점심 운세', desc: '하루 한 번, 먹대리가 봐 드리는 점심운' },
   { key: 'order', href: '/games/tap', emoji: '🛎️', color: '#CFE6FF', title: '스피드 주문받기', desc: '밀려드는 주문을 메뉴판에서 빨리 찾아 누르기' },
+  { key: 'run', href: '/games/run', emoji: '🏃', color: '#FFDCC8', title: '점심 질주', desc: '장애물을 피하고 음식을 주우며 식당까지 달리기' },
+  { key: 'stack', href: '/games/stack', emoji: '🍔', color: '#E3DBFF', title: '버거 쌓기', desc: '움직이는 재료를 반듯하게 쌓아 올리기' },
   { key: 'timing', href: '/games/timing', emoji: '⏰', color: '#D5F0C2', title: '점심시간 10초 전', desc: '12시 정각에 딱 맞춰 버튼 누르기 · 내기 가능' },
 ]
 
@@ -23,9 +25,13 @@ const Page = () => {
     const today = dateKey()
     const orderBest = Number(getFlag('orderBest'))
     const timingBest = Number(getFlag('timingBest'))
+    const runBest = Number(getFlag('runBest'))
+    const stackBest = Number(getFlag('stackBest'))
     setStatus({
       fortune: getFlag('fortuneOpened') === today ? '오늘 운세 확인 완료' : '오늘 운세 도착!',
       order: orderBest ? `내 최고 기록 ${sec(orderBest)}초` : '',
+      run: runBest ? `내 최고 기록 ${runBest}점` : '',
+      stack: stackBest ? `내 최고 기록 ${stackBest}단` : '',
       timing: timingBest ? `최고 기록 오차 ${sec(timingBest)}초` : '',
     })
   }, [])

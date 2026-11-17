@@ -12,6 +12,7 @@ import { trackPick } from '@/lib/firebase/stats'
 import { dateKey, getFlag, getPrefs, getTodayLunch, recordMessage, setFlag, setTodayLunch } from '@/lib/storage'
 import { toast } from '@/lib/toast'
 import { MenuType } from '@/types/types'
+import { ZODIAC_THEMES } from '@/app/data/zodiacLines'
 
 const MESSAGES = [
   '오전의 수고가 점심 한 끼로 보상받는 날입니다.',
@@ -46,20 +47,6 @@ const COLORS = [
 ]
 const DIRECTIONS = ['동쪽', '서쪽', '남쪽', '북쪽', '길 건너편', '한 블록 더 걸어간 곳', '늘 가던 골목']
 const ZODIAC = ['쥐', '소', '호랑이', '토끼', '용', '뱀', '말', '양', '원숭이', '닭', '개', '돼지']
-const ZODIAC_LINES = [
-  '먼저 메뉴를 제안하면 모두가 따라옵니다.',
-  '서두르지 않아도 좋은 자리가 납니다.',
-  '오늘은 새로운 식당에 도전해 볼 만합니다.',
-  '함께 먹는 사람 덕에 밥맛이 좋아집니다.',
-  '욕심내서 시킨 사이드가 신의 한 수가 됩니다.',
-  '조용히 혼자 먹는 점심에 복이 있습니다.',
-  '빨리 움직이면 웨이팅을 피합니다.',
-  '양보한 메뉴가 의외로 입에 맞습니다.',
-  '즉흥적으로 고른 메뉴가 정답입니다.',
-  '꼼꼼히 리뷰를 본 보람이 있는 날입니다.',
-  '단골집에 가면 반갑게 맞아 줄 운입니다.',
-  '든든하게 먹을수록 오후가 잘 풀립니다.',
-]
 
 // 날짜와 기기 고유 숫자로 만드는 고정 난수 (같은 날에는 항상 같은 운세)
 const seeded = (seed: string) => {
@@ -79,7 +66,8 @@ type Fortune = {
   color: (typeof COLORS)[number]
   direction: string
   number: number
-  zodiacLines: string[] // 띠 12개 각각의 한마디 (오늘 날짜 기준)
+  zodiacTheme: string // 오늘의 띠별 한마디 주제
+  zodiacLines: string[] // 띠 12개 각각의 한마디
   menu: MenuType
 }
 
@@ -106,6 +94,9 @@ const Page = () => {
         !prefs.avoid.some((tag) => menu.tags.includes(tag))
     )
     const menu = pick(pool.length ? pool : 해장제외전체)
+    // 띠별 한마디: 날짜만으로 주제를 정해서, 같은 날에는 모든 사람이 같은 주제를 봅니다.
+    const dayRand = seeded(today)
+    const theme = ZODIAC_THEMES[Math.floor(dayRand() * ZODIAC_THEMES.length)]
     setFortune({
       stars: 3 + Math.floor(rand() * 3),
       message: pick(MESSAGES),
@@ -113,7 +104,8 @@ const Page = () => {
       color: pick(COLORS),
       direction: pick(DIRECTIONS),
       number: 1 + Math.floor(rand() * 9),
-      zodiacLines: [...ZODIAC_LINES].sort(() => rand() - 0.5),
+      zodiacTheme: theme.theme,
+      zodiacLines: [...theme.lines].sort(() => rand() - 0.5).slice(0, 12),
       menu,
     })
     setOpened(getFlag('fortuneOpened') === today)
@@ -184,7 +176,9 @@ const Page = () => {
 
               {/* 띠별 한마디: 띠는 한 번 고르면 기억합니다 */}
               <div className='mt-6 pt-5 border-t border-customs-gray-95'>
-                <p className='text-label1 text-customs-gray-25 mb-2'>띠별 한마디</p>
+                <p className='text-label1 text-customs-gray-25 mb-2'>
+                  띠별 한마디 <span className='text-customs-gray-50 font-normal'>· 오늘의 주제: {fortune.zodiacTheme}</span>
+                </p>
                 <div className='flex flex-wrap gap-[6px]'>
                   {ZODIAC.map((animal) => (
                     <button
