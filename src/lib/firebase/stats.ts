@@ -122,3 +122,24 @@ export const fetchTapRank = async (count = 10, board: 'scores' | 'hard' = 'score
   if (!snap) return []
   return snap.docs.map((d) => ({ name: d.data().name as string, ms: d.data().ms as number }))
 }
+
+// ── 주문받기 기록 분포: 끝낸 판의 시간을 1초 단위 칸에 익명으로 쌓습니다.
+// 실제 사람들이 몇 초에 깨는지 보고 등급 기준을 조정하고, "상위 몇 %"를 보여 주는 데 씁니다.
+export const trackOrderTime = (ms: number, board: 'scores' | 'hard') => {
+  const bucket = Math.min(60, Math.floor(ms / 1000))
+  bump(['orderStats', board], { plays: 1, [`s${bucket}`]: 1 })
+}
+
+// 내 기록보다 느린 판의 비율로 "상위 몇 %"를 계산합니다. 판 수가 적으면 null.
+export const fetchOrderPercentile = async (ms: number, board: 'scores' | 'hard') => {
+  if (!firebaseEnabled) return null
+  const snap = await withTimeout(getDoc(doc(db, 'orderStats', board)), null)
+  if (!snap || !snap.exists()) return null
+  const data = snap.data() as Record<string, number>
+  const plays = data.plays ?? 0
+  if (plays < 20) return null
+  const mine = Math.min(60, Math.floor(ms / 1000))
+  let faster = 0
+  for (let i = 0; i < mine; i++) faster += data[`s${i}`] ?? 0
+  return Math.max(1, Math.round(((faster + 1) / plays) * 100))
+}

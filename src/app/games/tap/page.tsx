@@ -7,7 +7,7 @@ import Card from '@/components/elements/Card'
 import GameButton from '@/components/elements/GameButton'
 import Chip from '@/components/elements/Chip'
 import Ranking from '@/components/elements/Ranking'
-import { fetchTapRank, submitTapScore, TapRank } from '@/lib/firebase/stats'
+import { fetchOrderPercentile, fetchTapRank, submitTapScore, TapRank, trackOrderTime } from '@/lib/firebase/stats'
 import { dateKey, getFlag, setFlag } from '@/lib/storage'
 import ShareButton from '@/components/ShareButton'
 import { renderDocCard } from '@/lib/shareCard'
@@ -26,7 +26,7 @@ const BOARDS = [
   ['갈비탕', '삼계탕', '설렁탕', '곰탕', '도가니탕', '추어탕', '해물탕', '매운탕', '감자탕'],
 ]
 // 칸 모양: 게임을 시작할 때마다 하나를 무작위로 고릅니다. (모양은 globals.css의 .tile-*)
-const SKINS = ['postit', 'plate', 'ticket', 'keycap'] as const
+const SKINS = ['postit', 'plate', 'ticket', 'keycap', 'number', 'stamp', 'calendar', 'coaster'] as const
 const ROUNDS = 10
 const PENALTY = 1000 // 잘못 누르면 1초 추가
 const MAX_TRIES = 3
@@ -60,30 +60,38 @@ type Round = { orders: string[]; board: string[]; table: number; colors: TileCol
 const makeRounds = (): Round[] =>
   shuffle(BOARDS)
     .slice(0, ROUNDS)
-    .map((names) => {
+    .map((names, i) => {
       const board = shuffle(names)
       const colors = board.map(() => pick(TILE_COLORS))
       // 주문 2개(챌린저용). 기본 모드는 첫 번째만 씁니다.
-      return { orders: shuffle(board).slice(0, 2), board, table: 1 + Math.floor(Math.random() * 12), colors, lure: pick(TILE_COLORS) }
+      return { orders: shuffle(board).slice(0, 2), board, table: i + 1, colors, lure: pick(TILE_COLORS) }
     })
 
 const sec = (ms: number) => (ms / 1000).toFixed(2)
-const grade = (ms: number) =>
-  ms < 8000
-    ? '주문이 들어오기도 전에 누르셨습니다. 전설의 홀 매니저.'
-    : ms < 11000
-    ? '점심 러시도 거뜬합니다. 랭킹을 노려 보세요.'
-    : ms < 15000
-    ? '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'
-    : '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'
+// 등급: 일단 촘촘하게 6단계로 나눠 두고, 쌓인 기록 분포(orderStats)를 보고 기준 시간을 조정합니다.
+// [이 시간(초) 미만이면, 등급 이름, 한마디] — 챌린저는 누르는 횟수가 2배라 기준이 다릅니다.
+const GRADES: [number, number, string, string][] = [
+  // 기본, 챌린저, 이름, 한마디
+  [7, 13, '전설의 홀 매니저', '주문이 들어오기도 전에 누르셨습니다.'],
+  [9, 16, '에이스 알바', '점심 러시도 거뜬합니다. 랭킹을 노려 보세요.'],
+  [11, 20, '능숙한 직원', '손님이 기다릴 틈이 없었습니다.'],
+  [14, 25, '무난한 신입', '무난하게 받아냈습니다. 한 번 더 하면 줄어듭니다.'],
+  [18, 32, '수습 기간', '손님이 조금 기다렸습니다. 메뉴판을 눈에 익혀 보세요.'],
+  [Infinity, Infinity, '첫 출근', '괜찮습니다. 누구나 처음엔 메뉴판이 낯섭니다.'],
+]
+const gradeOf = (ms: number, hard: boolean) => {
+  const [, , title, desc] = GRADES.find(([basic, challenger]) => ms / 1000 < (hard ? challenger : basic))!
+  return { title, desc, level: GRADES.findIndex((g) => g[2] === title) + 1 }
+}
 
 // 스피드 주문받기: 주문 들어온 메뉴를 헷갈리는 메뉴판에서 최대한 빨리 찾아 누르는 게임
 const Page = () => {
   const [hard, setHard] = useState(false)
-  const [phase, setPhase] = useState<'idle' | 'playing' | 'done'>('idle')
+  const [phase, setPhase] = useState<'idle' | 'ready' | 'playing' | 'done'>('idle')
   const [rounds, setRounds] = useState<Round[]>([])
   const [index, setIndex] = useState(0)
   const [skin, setSkin] = useState<(typeof SKINS)[number] | ''>('')
+  const [count, setCount] = useState(3)
   const [step, setStep] = useState(0) // 챌린저: 한 주문 안에서 몇 번째 메뉴까지 눌렀는지
   const [elapsed, setElapsed] = useState(0)
   const [misses, setMisses] = useState(0)
@@ -93,9 +101,11 @@ const Page = () => {
   const [rank, setRank] = useState<TapRank[] | null>(null)
   const [registered, setRegistered] = useState('')
   const [nickname, setNickname] = useState('')
+  const [percentile, setPercentile] = useState<number | null>(null)
   const startedAt = useRef(0)
   const penalty = useRef(0)
   const frame = useRef(0)
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const today = dateKey()
   const triesLeft = MAX_TRIES - tries
 
@@ -105,6 +115,7 @@ const Page = () => {
   // 모드를 바꾸면 그 모드의 랭킹, 오늘 남은 횟수, 최고 기록을 불러옵니다.
   useEffect(() => {
     cancelAnimationFrame(frame.current)
+    timers.current.forEach(clearTimeout)
     setPhase('idle')
     setElapsed(0)
     setRegistered('')
@@ -129,13 +140,23 @@ const Page = () => {
     penalty.current = 0
     setTries(tries + 1)
     setFlag(`orderTries${key}:${today}`, String(tries + 1))
-    setPhase('playing')
-    startedAt.current = performance.now()
-    const tick = () => {
-      setElapsed(performance.now() - startedAt.current + penalty.current)
-      frame.current = requestAnimationFrame(tick)
-    }
-    frame.current = requestAnimationFrame(tick)
+    // 3, 2, 1 카운트다운 뒤에 시계가 돌기 시작합니다.
+    setPhase('ready')
+    setCount(3)
+    timers.current.forEach(clearTimeout)
+    timers.current = [
+      setTimeout(() => setCount(2), 600),
+      setTimeout(() => setCount(1), 1200),
+      setTimeout(() => {
+        setPhase('playing')
+        startedAt.current = performance.now()
+        const tick = () => {
+          setElapsed(performance.now() - startedAt.current + penalty.current)
+          frame.current = requestAnimationFrame(tick)
+        }
+        frame.current = requestAnimationFrame(tick)
+      }, 1800),
+    ]
   }
 
   const tap = (name: string) => {
@@ -172,6 +193,9 @@ const Page = () => {
     const ms = Math.round(performance.now() - startedAt.current + penalty.current)
     setElapsed(ms)
     setPhase('done')
+    setPercentile(null)
+    trackOrderTime(ms, board)
+    fetchOrderPercentile(ms, board).then(setPercentile)
     if (!best || ms < best) {
       setBest(ms)
       setFlag(`orderBest${key}`, String(ms))
@@ -198,10 +222,10 @@ const Page = () => {
     <Container title='스피드 주문받기'>
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
         <div className='flex gap-2'>
-          <Chip selected={!hard} onClick={() => phase !== 'playing' && setHard(false)}>
+          <Chip selected={!hard} onClick={() => (phase === 'idle' || phase === 'done') && setHard(false)}>
             기본
           </Chip>
-          <Chip selected={hard} onClick={() => phase !== 'playing' && setHard(true)}>
+          <Chip selected={hard} onClick={() => (phase === 'idle' || phase === 'done') && setHard(true)}>
             챌린저
           </Chip>
         </div>
@@ -243,6 +267,15 @@ const Page = () => {
               </div>
             )}
 
+            {phase === 'ready' && (
+              <div className='h-[300px] flex flex-col items-center justify-center'>
+                <p className='text-label2 text-customs-gray-50'>첫 주문이 곧 들어옵니다</p>
+                <span key={count} className='pop-in font-paperlogy font-bold text-[96px] leading-none text-customs-orange-50 mt-2'>
+                  {count}
+                </span>
+              </div>
+            )}
+
             {phase === 'playing' && round && (
               <>
                 {/* 주문서 */}
@@ -263,7 +296,7 @@ const Page = () => {
                   )}
                 </div>
                 {/* 메뉴판: 판마다 메뉴와 자리가 바뀝니다 */}
-                <div className={`grid grid-cols-3 mt-5 items-center ${skin === 'postit' ? 'gap-x-3 gap-y-4' : 'gap-x-2 gap-y-[14px]'}`}>
+                <div className={`grid grid-cols-3 mt-5 items-center ${skin === 'postit' || skin === 'stamp' ? 'gap-x-3 gap-y-4' : 'gap-x-2 gap-y-[14px]'}`}>
                   {round.board.map((name, i) => (
                     <button
                       key={name}
@@ -282,7 +315,11 @@ const Page = () => {
             {phase === 'done' && (
               <div className='text-center pop-in'>
                 <div className='rounded-[20px] bg-customs-orange-95-bg px-5 py-5'>
-                  <p className='text-label2 text-customs-gray-25'>{grade(hard ? elapsed / 2 : elapsed)}</p>
+                  <p className='text-caption1 text-customs-gray-50'>
+                    {gradeOf(elapsed, hard).level}등급{percentile !== null && ` · 상위 ${percentile}%`}
+                  </p>
+                  <p className='font-paperlogy font-bold text-[22px] text-customs-gray-10'>{gradeOf(elapsed, hard).title}</p>
+                  <p className='text-label2 text-customs-gray-25 mt-1'>{gradeOf(elapsed, hard).desc}</p>
                   <h2 className='font-paperlogy font-bold text-[44px] leading-[120%] text-customs-orange-50 mt-1'>
                     {sec(elapsed)}
                     <span className='text-[22px] text-customs-gray-10'> 초</span>
@@ -316,7 +353,7 @@ const Page = () => {
               </div>
             )}
 
-            {phase !== 'playing' && (
+            {(phase === 'idle' || phase === 'done') && (
               <div className='mt-5 px-1'>
                 <GameButton onClick={start} disabled={triesLeft <= 0}>
                   {triesLeft <= 0 ? '오늘 영업 종료! 내일 다시 만나요' : phase === 'done' ? `다시 도전 (${triesLeft}번 남음)` : '영업 시작'}

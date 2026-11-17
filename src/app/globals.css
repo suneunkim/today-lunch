@@ -135,3 +135,95 @@ body {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 2px 3px rgba(0, 0, 0, 0.08);
 }
 .tile-keycap:active { scale: 1; translate: 0 6px; box-shadow: 0 2px 0 var(--tile-dark, #b9b5c4); }
+
+/* 대기 번호표 */
+.tile-number {
+  height: 76px;
+  padding-top: 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--tile-dark, #ebd88a);
+  background: var(--tile, #fff7d1);
+  box-shadow: 0 3px 0 var(--tile-dark, #ebd88a);
+}
+.tile-number::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  margin-left: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* 도장 */
+.tile-stamp {
+  aspect-ratio: 1;
+  padding: 0 14px;
+  border-radius: 50%;
+  font-size: 14px;
+  color: var(--tile-deep, #f47a3a);
+  background: var(--tile-light, #fff);
+  box-shadow: inset 0 0 0 3px var(--tile-deep, #f47a3a), inset 0 0 0 6px var(--tile-light, #fff),
+    inset 0 0 0 7.5px var(--tile-deep, #f47a3a);
+  rotate: -6deg;
+}
+.tile-stamp:nth-child(even) { rotate: 5deg; }
+
+/* 달력 낱장 */
+.tile-calendar {
+  height: 76px;
+  padding-top: 18px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--tile-light, #fff);
+  box-shadow: 0 0 0 1px var(--tile-dark, #e5e4e7), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+.tile-calendar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: var(--tile-dark, #f47a3a);
+}
+.tile-calendar::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  margin-left: -22px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 36px 0 0 #fff;
+}
+
+/* 컵받침 */
+.tile-coaster {
+  aspect-ratio: 1;
+  padding: 0 12px;
+  border-radius: 22px;
+  font-size: 14px;
+  color: var(--tile-deep, #4e3a24);
+  background: var(--tile, #e9d3b0);
+  box-shadow: inset 0 0 0 5px var(--tile, #e9d3b0), inset 0 0 0 6.5px rgba(90, 60, 30, 0.3),
+    0 4px 0 var(--tile-dark, #cdb48c);
+}
+
+/* 점심시간 10초 전: 먹대리가 올라와 시계를 가리는 효과 */
+@keyframes cover-up {
+  from { translate: 0 100%; }
+  to { translate: 0 0; }
+}
+.cover-up { animation: cover-up 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes fade-pop {
+  0% { opacity: 0; scale: 0.9; }
+  15% { opacity: 1; scale: 1; }
+  85% { opacity: 1; scale: 1; }
+  100% { opacity: 0; scale: 1.02; }
+}

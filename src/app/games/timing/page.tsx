@@ -49,6 +49,7 @@ const Page = () => {
   const [hidden, setHidden] = useState(false)
   const [diff, setDiff] = useState(0)
   const [best, setBest] = useState<number | null>(null)
+  const [intro, setIntro] = useState('') // 내기: 차례 안내 (잠깐 떴다 사라짐)
   const startedAt = useRef(0)
   const frame = useRef(0)
 
@@ -68,7 +69,20 @@ const Page = () => {
     ? [...results].sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0]
     : null
 
+  // 내기에서는 누구 차례인지 잠깐 보여 준 뒤에 시작합니다. (폰을 넘겨받을 시간)
   const start = () => {
+    if (mode === 'bet') {
+      setIntro(names[turn])
+      setTimeout(() => {
+        setIntro('')
+        begin()
+      }, 1600)
+      return
+    }
+    begin()
+  }
+
+  const begin = () => {
     startedAt.current = performance.now()
     setPhase('running')
     setHidden(false)
@@ -120,6 +134,20 @@ const Page = () => {
 
   return (
     <Container title='점심시간 10초 전'>
+      {intro && (
+        <div className='fixed inset-0 z-30 bg-black bg-opacity-60 flex items-center justify-center px-8'>
+          <div
+            className='w-full max-w-[320px] rounded-[28px] bg-customs-gray-100 px-6 py-8 text-center'
+            style={{ animation: 'fade-pop 1.6s both' }}
+          >
+            <p className='text-label2 text-customs-gray-50'>
+              {turn + 1}번째 도전자 ({turn + 1} / {names.length})
+            </p>
+            <h2 className='font-paperlogy font-bold text-[32px] text-customs-orange-50 mt-1'>{intro} 님</h2>
+            <p className='text-label2 text-customs-gray-25 mt-2'>폰을 넘겨받으세요. 곧 시작합니다!</p>
+          </div>
+        </div>
+      )}
       <div className='bg-customs-beige-85 p-5 pb-28 flex flex-col gap-5 min-h-[calc(100vh-48px)]'>
         <div className='flex gap-2'>
           <Chip selected={mode === 'solo'} onClick={() => resetBet('solo')}>
@@ -167,10 +195,19 @@ const Page = () => {
             <p className='text-label2 text-customs-gray-50'>
               12시 정각(12:00:00.00)에 버튼을 누르세요. 4초 뒤부터는 먹대리가 시계를 가립니다.
             </p>
-            <div className='mt-4 h-[108px] rounded-[20px] bg-customs-gray-10 flex items-center justify-center'>
-              <span className='font-paperlogy font-bold text-[36px] text-customs-orange-50 tabular-nums'>
-                {hidden ? '1?:??:??.??' : display}
-              </span>
+            <div className='relative overflow-hidden mt-4 h-[108px] rounded-[20px] bg-customs-gray-10 flex items-center justify-center'>
+              <span className='font-paperlogy font-bold text-[36px] text-customs-orange-50 tabular-nums'>{display}</span>
+              {/* 4초가 지나면 먹대리가 올라와서 시계를 가립니다 */}
+              {hidden && (
+                <div className='cover-up absolute inset-0 bg-customs-gray-25 flex items-center justify-center gap-3'>
+                  <img src='/comment.png' alt='' className='h-[84px] object-contain' />
+                  <span className='font-paperlogy font-bold text-[18px] leading-[130%] text-customs-gray-100'>
+                    여기부턴
+                    <br />
+                    감으로!
+                  </span>
+                </div>
+              )}
             </div>
 
             {phase === 'done' && (
@@ -196,7 +233,7 @@ const Page = () => {
         )}
 
         {mode === 'bet' && results.length > 0 && (phase === 'idle' || betOver) && (
-          <Card title={betOver ? '내기 결과' : '현재 기록'}>
+          <Card title={betOver ? '내기 결과 · 최종 순위' : '현재 순위'}>
             {betOver && loser && (
               <div className='rounded-[14px] bg-customs-orange-95-bg px-5 py-4 mb-4 pop-in'>
                 <div className='text-label2 text-customs-gray-25'>오늘의 결제자</div>

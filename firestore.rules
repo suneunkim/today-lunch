@@ -27,6 +27,11 @@ service cloud.firestore {
         && request.resource.data.name is string && request.resource.data.name.size() <= 20
         && request.resource.data.ms is int && request.resource.data.ms >= 2500;
     }
+    // 주문받기 기록 분포 (1초 단위 칸에 횟수만 더함)
+    match /orderStats/{board} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().size() <= 70;
+    }
     // 코멘트 게시판은 앱에서 뺐습니다. 기존 글은 보관만 하고 새 글은 막습니다.
     match /comments/{comment} {
       allow read: if true;
