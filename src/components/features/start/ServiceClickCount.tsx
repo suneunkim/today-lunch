@@ -15,7 +15,7 @@ const ServiceClickCount = ({ count }: { count: number }) => {
           />
         </svg>
       </span>
-      <span className='text-label1 text-customs-gray-95'>{count.toLocaleString('ko-KR')}</span>
+      <span className='text-label1 text-customs-gray-95'>누적 이용자 {count.toLocaleString('ko-KR')}명</span>
     </div>
   )
 }

@@ -89,7 +89,7 @@ const Page = () => {
             <Card title='한눈에 보기'>
               <div className='flex gap-2'>
                 <Tile label='누적 추천 횟수' value={num(totals?.useCount)} />
-                <Tile label='누적 이용 기기' value={num(totals?.installs)} />
+                <Tile label='누적 이용자' value={num(totals?.installs)} />
               </div>
               <div className='flex gap-2 mt-2'>
                 <Tile label='오늘 추천' value={num(today?.uses)} />

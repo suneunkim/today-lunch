@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Capacitor } from '@capacitor/core'
 import { toast } from '@/lib/toast'
+import { trackVisit } from '@/lib/firebase/stats'
 
 // 뒤로가기를 눌렀을 때 갈 곳: 하위 화면은 상위 화면으로, 탭 화면은 홈으로, 홈에서는 앱 종료
 const parentOf = (path: string) => {
@@ -25,6 +26,11 @@ const AppShell = () => {
   useEffect(() => {
     pathRef.current = pathname
   }, [pathname])
+
+  // 앱을 연 사람 수 집계 (기기당 한 번, 하루 한 번)
+  useEffect(() => {
+    trackVisit()
+  }, [])
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>

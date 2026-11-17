@@ -27,11 +27,11 @@ export const StartButton = () => {
   )
 }
 
-// 누적 이용 수는 받아오는 대로 표시 (못 받아와도 화면은 그대로)
+// 누적 이용자 수(앱을 열어 본 기기 수)는 받아오는 대로 표시 (못 받아와도 화면은 그대로)
 export const StartCount = () => {
   const [count, setCount] = useState<number | null>(null)
   useEffect(() => {
-    getTotals().then((totals) => totals && setCount(totals.useCount))
+    getTotals().then((totals) => totals && totals.installs > 0 && setCount(totals.installs))
   }, [])
 
   if (count === null) return null

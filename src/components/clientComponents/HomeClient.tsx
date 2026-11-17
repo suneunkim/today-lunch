@@ -1,12 +1,12 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import MenuSelection from '../MenuSelection'
 import Button from '../elements/Button'
 import Chip from '../elements/Chip'
 import { useRouter } from 'next/navigation'
 import Loading from '../Loading'
-import { trackUse } from '@/lib/firebase/stats'
+import { getTotals, trackUse } from '@/lib/firebase/stats'
 import { FilterKey, FILTERS } from '@/lib/recommend'
 
 const HomeClient = () => {
@@ -14,6 +14,11 @@ const HomeClient = () => {
   const [selectedMenu, setSelectedMenu] = useState<string[]>(['전체'])
   const [filters, setFilters] = useState<FilterKey[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [useCount, setUseCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    getTotals().then((totals) => totals && totals.useCount > 0 && setUseCount(totals.useCount))
+  }, [])
 
   const handleSubmit = () => {
     if (selectedMenu.length === 0) return
@@ -92,6 +97,11 @@ const HomeClient = () => {
           <Button type='secondary' onClick={() => router.push('/slot')}>
             고민 없이 랜덤으로 뽑기
           </Button>
+          {useCount !== null && (
+            <p className='text-caption1 text-customs-gray-50 text-center'>
+              지금까지 {useCount.toLocaleString('ko-KR')}번 점심을 골라 드렸어요
+            </p>
+          )}
         </>
       )}
     </div>

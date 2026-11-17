@@ -50,21 +50,23 @@ const bump = (path: [string, string], fields: Record<string, number>) => {
 
 const totalDoc: [string, string] = ['serviceClick', 'serviceClickCount']
 
-// 추천 1회 = 이용 1회. 기기별 첫 이용(설치 수)과 하루 첫 이용(일간 이용자 수)도 함께 셉니다.
-export const trackUse = () => {
+// 앱(또는 웹)을 연 사람 수. 기기별 첫 방문은 누적 이용자, 하루 첫 방문은 그날 이용자로 한 번씩만 셉니다.
+export const trackVisit = () => {
   const today = dateKey()
-  const total: Record<string, number> = { useCount: 1 }
-  const daily: Record<string, number> = { uses: 1 }
   if (!getFlag('installed')) {
-    total.installs = 1
+    bump(totalDoc, { installs: 1 })
     setFlag('installed', today)
   }
   if (getFlag('lastUseDay') !== today) {
-    daily.users = 1
+    bump(['dailyStats', today], { users: 1 })
     setFlag('lastUseDay', today)
   }
-  bump(totalDoc, total)
-  bump(['dailyStats', today], daily)
+}
+
+// 추천 1회 = 이용 1회
+export const trackUse = () => {
+  bump(totalDoc, { useCount: 1 })
+  bump(['dailyStats', dateKey()], { uses: 1 })
 }
 
 // "이걸로 할게!" 로 결재된 메뉴 집계
